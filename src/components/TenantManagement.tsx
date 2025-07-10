@@ -41,7 +41,7 @@ const TenantManagement: React.FC = () => {
     address: '',
     emergency_contact: '',
     status: 'active',
-    notes: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const TenantManagement: React.FC = () => {
         toast({
           title: 'Authentication Required',
           description: 'Please log in to view tenants.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
@@ -73,7 +73,7 @@ const TenantManagement: React.FC = () => {
         toast({
           title: 'Error',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
@@ -83,7 +83,7 @@ const TenantManagement: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to load tenants',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -92,12 +92,12 @@ const TenantManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.first_name || !formData.last_name || !formData.email) {
       toast({
         title: 'Error',
         description: 'Please fill in all required fields',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -108,50 +108,50 @@ const TenantManagement: React.FC = () => {
         toast({
           title: 'Authentication Required',
           description: 'Please log in to continue.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
 
       const tenantData = {
         ...formData,
-        user_id: userData.ID,
+        user_id: userData.ID
       };
 
       if (editingTenant) {
         const { error } = await window.ezsite.apis.tableUpdate('26864', {
           ID: editingTenant.id,
-          ...tenantData,
+          ...tenantData
         });
-        
+
         if (error) {
           toast({
             title: 'Error',
             description: error,
-            variant: 'destructive',
+            variant: 'destructive'
           });
           return;
         }
-        
+
         toast({
           title: 'Success',
-          description: 'Tenant updated successfully',
+          description: 'Tenant updated successfully'
         });
       } else {
         const { error } = await window.ezsite.apis.tableCreate('26864', tenantData);
-        
+
         if (error) {
           toast({
             title: 'Error',
             description: error,
-            variant: 'destructive',
+            variant: 'destructive'
           });
           return;
         }
-        
+
         toast({
           title: 'Success',
-          description: 'Tenant added successfully',
+          description: 'Tenant added successfully'
         });
       }
 
@@ -163,7 +163,7 @@ const TenantManagement: React.FC = () => {
         address: '',
         emergency_contact: '',
         status: 'active',
-        notes: '',
+        notes: ''
       });
       setEditingTenant(null);
       setShowAddDialog(false);
@@ -172,7 +172,7 @@ const TenantManagement: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to save tenant',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -186,7 +186,7 @@ const TenantManagement: React.FC = () => {
       address: tenant.address,
       emergency_contact: tenant.emergency_contact,
       status: tenant.status,
-      notes: tenant.notes,
+      notes: tenant.notes
     });
     setEditingTenant(tenant);
     setShowAddDialog(true);
@@ -194,51 +194,51 @@ const TenantManagement: React.FC = () => {
 
   const handleDelete = async (tenant: Tenant) => {
     if (!confirm('Are you sure you want to delete this tenant?')) return;
-    
+
     try {
       const { error } = await window.ezsite.apis.tableDelete('26864', { ID: tenant.id });
-      
+
       if (error) {
         toast({
           title: 'Error',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
-      
+
       toast({
         title: 'Success',
-        description: 'Tenant deleted successfully',
+        description: 'Tenant deleted successfully'
       });
-      
+
       loadTenants();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to delete tenant',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
 
-  const filteredTenants = tenants.filter(tenant => {
-    const matchesSearch = 
-      tenant.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredTenants = tenants.filter((tenant) => {
+    const matchesSearch =
+    tenant.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = filterStatus === 'all' || tenant.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':return 'bg-green-100 text-green-800';
+      case 'inactive':return 'bg-gray-100 text-gray-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -258,7 +258,7 @@ const TenantManagement: React.FC = () => {
                 address: '',
                 emergency_contact: '',
                 status: 'active',
-                notes: '',
+                notes: ''
               });
             }}>
               <Plus className="h-4 w-4 mr-2" />
@@ -279,8 +279,8 @@ const TenantManagement: React.FC = () => {
                     id="first_name"
                     value={formData.first_name}
                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    required
-                  />
+                    required />
+
                 </div>
                 <div>
                   <Label htmlFor="last_name">Last Name *</Label>
@@ -288,8 +288,8 @@ const TenantManagement: React.FC = () => {
                     id="last_name"
                     value={formData.last_name}
                     onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    required
-                  />
+                    required />
+
                 </div>
               </div>
 
@@ -300,8 +300,8 @@ const TenantManagement: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
+                  required />
+
               </div>
 
               <div>
@@ -309,8 +309,8 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+
               </div>
 
               <div>
@@ -318,8 +318,8 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+
               </div>
 
               <div>
@@ -327,8 +327,8 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="emergency_contact"
                   value={formData.emergency_contact}
-                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })} />
+
               </div>
 
               <div>
@@ -351,8 +351,8 @@ const TenantManagement: React.FC = () => {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -376,8 +376,8 @@ const TenantManagement: React.FC = () => {
             placeholder="Search tenants..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+            className="pl-10" />
+
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full sm:w-40">
@@ -393,10 +393,10 @@ const TenantManagement: React.FC = () => {
       </div>
 
       {/* Tenant Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+      {loading ?
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) =>
+        <Card key={i} className="animate-pulse">
               <CardHeader>
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
               </CardHeader>
@@ -407,19 +407,19 @@ const TenantManagement: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : filteredTenants.length === 0 ? (
-        <Card>
+        )}
+        </div> :
+      filteredTenants.length === 0 ?
+      <Card>
           <CardContent className="text-center py-8">
             <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No tenants found</p>
           </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTenants.map((tenant) => (
-            <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
+        </Card> :
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTenants.map((tenant) =>
+        <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">
@@ -435,42 +435,42 @@ const TenantManagement: React.FC = () => {
                   <Mail className="h-4 w-4" />
                   <span>{tenant.email}</span>
                 </div>
-                {tenant.phone && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                {tenant.phone &&
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Phone className="h-4 w-4" />
                     <span>{tenant.phone}</span>
                   </div>
-                )}
-                {tenant.address && (
-                  <p className="text-sm text-gray-600">{tenant.address}</p>
-                )}
-                {tenant.notes && (
-                  <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
-                )}
+            }
+                {tenant.address &&
+            <p className="text-sm text-gray-600">{tenant.address}</p>
+            }
+                {tenant.notes &&
+            <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
+            }
                 <div className="flex justify-end space-x-2 pt-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(tenant)}
-                  >
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(tenant)}>
+
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(tenant)}
-                    className="text-red-600 hover:text-red-700"
-                  >
+                variant="outline"
+                size="sm"
+                onClick={() => handleDelete(tenant)}
+                className="text-red-600 hover:text-red-700">
+
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          ))}
+        )}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default TenantManagement;

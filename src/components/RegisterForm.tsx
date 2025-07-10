@@ -20,12 +20,12 @@ const RegisterForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password || !confirmPassword) {
       toast({
         title: 'Error',
         description: 'Please fill in all fields',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -34,7 +34,7 @@ const RegisterForm: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Passwords do not match',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -43,7 +43,7 @@ const RegisterForm: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Password must be at least 6 characters long',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -51,27 +51,27 @@ const RegisterForm: React.FC = () => {
     try {
       setLoading(true);
       const { error } = await window.ezsite.apis.register({ email, password });
-      
+
       if (error) {
         toast({
           title: 'Registration Failed',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
 
       toast({
         title: 'Success',
-        description: 'Registration successful! Please check your email for verification.',
+        description: 'Registration successful! Please check your email for verification.'
       });
-      
+
       navigate('/login');
     } catch (error) {
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -100,8 +100,8 @@ const RegisterForm: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="mt-1"
-              />
+                className="mt-1" />
+
             </div>
 
             <div>
@@ -113,18 +113,18 @@ const RegisterForm: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  required
-                />
+                  required />
+
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
+                  onClick={() => setShowPassword(!showPassword)}>
+
+                  {showPassword ?
+                  <EyeOff className="h-4 w-4 text-gray-400" /> :
+
+                  <Eye className="h-4 w-4 text-gray-400" />
+                  }
                 </button>
               </div>
             </div>
@@ -138,18 +138,18 @@ const RegisterForm: React.FC = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
-                  required
-                />
+                  required />
+
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+
+                  {showConfirmPassword ?
+                  <EyeOff className="h-4 w-4 text-gray-400" /> :
+
+                  <Eye className="h-4 w-4 text-gray-400" />
+                  }
                 </button>
               </div>
             </div>
@@ -169,8 +169,8 @@ const RegisterForm: React.FC = () => {
           </form>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default RegisterForm;

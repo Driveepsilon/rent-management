@@ -6,6 +6,9 @@ import Layout from '@/components/Layout';
 import Dashboard from '@/components/Dashboard';
 import TenantManagement from '@/components/TenantManagement';
 import PropertyManagement from '@/components/PropertyManagement';
+import InvoiceManagement from '@/components/InvoiceManagement';
+import ReceiptManagement from '@/components/ReceiptManagement';
+import LeaseAgreements from '@/components/LeaseAgreements';
 import LoginForm from '@/components/LoginForm';
 import RegisterForm from '@/components/RegisterForm';
 import NotFound from './pages/NotFound';
@@ -23,6 +26,9 @@ const App = () =>
           <Route path="/" element={<Layout><Dashboard /></Layout>} />
           <Route path="/tenants" element={<Layout><TenantManagement /></Layout>} />
           <Route path="/properties" element={<Layout><PropertyManagement /></Layout>} />
+          <Route path="/invoices" element={<Layout><InvoiceManagement /></Layout>} />
+          <Route path="/receipts" element={<Layout><ReceiptManagement /></Layout>} />
+          <Route path="/leases" element={<Layout><LeaseAgreements /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

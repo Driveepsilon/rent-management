@@ -1,0 +1,483 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+
+interface Invoice {
+  id: number;
+  tenant_id: number;
+  property_id: number;
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  amount: number;
+  description: string;
+  status: string;
+  late_fee: number;
+}
+
+interface Tenant {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Property {
+  id: number;
+  name: string;
+  address: string;
+  monthly_rent: number;
+}
+
+const InvoiceManagement: React.FC = () => {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    tenant_id: '',
+    property_id: '',
+    invoice_date: new Date().toISOString().split('T')[0],
+    due_date: '',
+    amount: '',
+    description: '',
+    late_fee: '0'
+  });
+
+  useEffect(() => {
+    fetchInvoices();
+    fetchTenants();
+    fetchProperties();
+  }, []);
+
+  const fetchInvoices = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage(26867, {
+        PageNo: 1,
+        PageSize: 50,
+        OrderByField: "id",
+        IsAsc: false,
+        Filters: []
+      });
+      if (error) throw error;
+      setInvoices(data.List || []);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch invoices",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTenants = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage(26864, {
+        PageNo: 1,
+        PageSize: 100,
+        OrderByField: "id",
+        IsAsc: false,
+        Filters: [{ name: "status", op: "Equal", value: "active" }]
+      });
+      if (error) throw error;
+      setTenants(data.List || []);
+    } catch (error) {
+      console.error('Error fetching tenants:', error);
+    }
+  };
+
+  const fetchProperties = async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.tablePage(26865, {
+        PageNo: 1,
+        PageSize: 100,
+        OrderByField: "id",
+        IsAsc: false,
+        Filters: []
+      });
+      if (error) throw error;
+      setProperties(data.List || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    }
+  };
+
+  const handleCreateInvoice = async () => {
+    try {
+      const invoiceNumber = `INV-${Date.now()}`;
+      const { error } = await window.ezsite.apis.tableCreate(26867, {
+        tenant_id: parseInt(formData.tenant_id),
+        property_id: parseInt(formData.property_id),
+        invoice_number: invoiceNumber,
+        invoice_date: new Date(formData.invoice_date).toISOString(),
+        due_date: new Date(formData.due_date).toISOString(),
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        late_fee: parseFloat(formData.late_fee),
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Invoice created successfully",
+      });
+
+      setIsCreateDialogOpen(false);
+      setFormData({
+        tenant_id: '',
+        property_id: '',
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: '',
+        amount: '',
+        description: '',
+        late_fee: '0'
+      });
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create invoice",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStatusUpdate = async (invoice: Invoice, newStatus: string) => {
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate(26867, {
+        ID: invoice.id,
+        ...invoice,
+        status: newStatus
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Invoice status updated successfully",
+      });
+
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update invoice status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getTenantName = (tenantId: number) => {
+    const tenant = tenants.find(t => t.id === tenantId);
+    return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
+  };
+
+  const getPropertyName = (propertyId: number) => {
+    const property = properties.find(p => p.id === propertyId);
+    return property ? property.name : 'Unknown';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const generateInvoicePDF = (invoice: Invoice) => {
+    const tenant = tenants.find(t => t.id === invoice.tenant_id);
+    const property = properties.find(p => p.id === invoice.property_id);
+    
+    const invoiceContent = `
+      INVOICE
+      
+      Invoice Number: ${invoice.invoice_number}
+      Date: ${new Date(invoice.invoice_date).toLocaleDateString()}
+      Due Date: ${new Date(invoice.due_date).toLocaleDateString()}
+      
+      Bill To:
+      ${tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown Tenant'}
+      ${tenant ? tenant.email : ''}
+      
+      Property:
+      ${property ? property.name : 'Unknown Property'}
+      ${property ? property.address : ''}
+      
+      Description: ${invoice.description}
+      Amount: $${invoice.amount.toFixed(2)}
+      Late Fee: $${invoice.late_fee.toFixed(2)}
+      
+      Total: $${(invoice.amount + invoice.late_fee).toFixed(2)}
+      
+      Status: ${invoice.status.toUpperCase()}
+    `;
+
+    const blob = new Blob([invoiceContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${invoice.invoice_number}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (loading) {
+    return <div className="p-6">Loading invoices...</div>;
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Invoice Management</h1>
+          <p className="text-gray-600">Create and manage invoices for your tenants</p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Invoice
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Invoice</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="tenant">Tenant</Label>
+                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({...formData, tenant_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tenant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tenants.map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                          {tenant.first_name} {tenant.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="property">Property</Label>
+                  <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {properties.map((property) => (
+                        <SelectItem key={property.id} value={property.id.toString()}>
+                          {property.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="invoice_date">Invoice Date</Label>
+                  <Input
+                    id="invoice_date"
+                    type="date"
+                    value={formData.invoice_date}
+                    onChange={(e) => setFormData({...formData, invoice_date: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="due_date">Due Date</Label>
+                  <Input
+                    id="due_date"
+                    type="date"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="late_fee">Late Fee</Label>
+                  <Input
+                    id="late_fee"
+                    type="number"
+                    step="0.01"
+                    value={formData.late_fee}
+                    onChange={(e) => setFormData({...formData, late_fee: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder="Enter invoice description"
+                />
+              </div>
+              <Button onClick={handleCreateInvoice} className="w-full">
+                Create Invoice
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        {invoices.map((invoice) => (
+          <Card key={invoice.id}>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold">{invoice.invoice_number}</h3>
+                    <Badge className={getStatusColor(invoice.status)}>
+                      {invoice.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Tenant:</strong> {getTenantName(invoice.tenant_id)}</p>
+                    <p><strong>Property:</strong> {getPropertyName(invoice.property_id)}</p>
+                    <p><strong>Amount:</strong> ${invoice.amount.toFixed(2)}</p>
+                    <p><strong>Due Date:</strong> {new Date(invoice.due_date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedInvoice(invoice);
+                      setIsViewDialogOpen(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateInvoicePDF(invoice)}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                  {invoice.status === 'pending' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusUpdate(invoice, 'paid')}
+                    >
+                      Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {selectedInvoice && (
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Invoice Details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Invoice Number</Label>
+                  <p className="font-mono text-sm">{selectedInvoice.invoice_number}</p>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <Badge className={getStatusColor(selectedInvoice.status)}>
+                    {selectedInvoice.status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Tenant</Label>
+                  <p>{getTenantName(selectedInvoice.tenant_id)}</p>
+                </div>
+                <div>
+                  <Label>Property</Label>
+                  <p>{getPropertyName(selectedInvoice.property_id)}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Invoice Date</Label>
+                  <p>{new Date(selectedInvoice.invoice_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <Label>Due Date</Label>
+                  <p>{new Date(selectedInvoice.due_date).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Amount</Label>
+                  <p className="text-lg font-semibold">${selectedInvoice.amount.toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label>Late Fee</Label>
+                  <p className="text-lg font-semibold">${selectedInvoice.late_fee.toFixed(2)}</p>
+                </div>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <p className="text-sm">{selectedInvoice.description}</p>
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <Label className="text-lg">Total Amount</Label>
+                  <p className="text-xl font-bold">${(selectedInvoice.amount + selectedInvoice.late_fee).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default InvoiceManagement;

@@ -47,7 +47,7 @@ const PropertyManagement: React.FC = () => {
     security_deposit: 0,
     status: 'available',
     description: '',
-    image_url: '',
+    image_url: ''
   });
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const PropertyManagement: React.FC = () => {
         toast({
           title: 'Authentication Required',
           description: 'Please log in to view properties.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
@@ -79,7 +79,7 @@ const PropertyManagement: React.FC = () => {
         toast({
           title: 'Error',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
@@ -89,7 +89,7 @@ const PropertyManagement: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to load properties',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -98,12 +98,12 @@ const PropertyManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.address) {
       toast({
         title: 'Error',
         description: 'Please fill in all required fields',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -114,50 +114,50 @@ const PropertyManagement: React.FC = () => {
         toast({
           title: 'Authentication Required',
           description: 'Please log in to continue.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
 
       const propertyData = {
         ...formData,
-        user_id: userData.ID,
+        user_id: userData.ID
       };
 
       if (editingProperty) {
         const { error } = await window.ezsite.apis.tableUpdate('26865', {
           ID: editingProperty.id,
-          ...propertyData,
+          ...propertyData
         });
-        
+
         if (error) {
           toast({
             title: 'Error',
             description: error,
-            variant: 'destructive',
+            variant: 'destructive'
           });
           return;
         }
-        
+
         toast({
           title: 'Success',
-          description: 'Property updated successfully',
+          description: 'Property updated successfully'
         });
       } else {
         const { error } = await window.ezsite.apis.tableCreate('26865', propertyData);
-        
+
         if (error) {
           toast({
             title: 'Error',
             description: error,
-            variant: 'destructive',
+            variant: 'destructive'
           });
           return;
         }
-        
+
         toast({
           title: 'Success',
-          description: 'Property added successfully',
+          description: 'Property added successfully'
         });
       }
 
@@ -172,7 +172,7 @@ const PropertyManagement: React.FC = () => {
         security_deposit: 0,
         status: 'available',
         description: '',
-        image_url: '',
+        image_url: ''
       });
       setEditingProperty(null);
       setShowAddDialog(false);
@@ -181,7 +181,7 @@ const PropertyManagement: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to save property',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -198,7 +198,7 @@ const PropertyManagement: React.FC = () => {
       security_deposit: property.security_deposit,
       status: property.status,
       description: property.description,
-      image_url: property.image_url,
+      image_url: property.image_url
     });
     setEditingProperty(property);
     setShowAddDialog(true);
@@ -206,51 +206,51 @@ const PropertyManagement: React.FC = () => {
 
   const handleDelete = async (property: Property) => {
     if (!confirm('Are you sure you want to delete this property?')) return;
-    
+
     try {
       const { error } = await window.ezsite.apis.tableDelete('26865', { ID: property.id });
-      
+
       if (error) {
         toast({
           title: 'Error',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
-      
+
       toast({
         title: 'Success',
-        description: 'Property deleted successfully',
+        description: 'Property deleted successfully'
       });
-      
+
       loadProperties();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to delete property',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
 
-  const filteredProperties = properties.filter(property => {
-    const matchesSearch = 
-      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.property_type.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+    property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.property_type.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = filterStatus === 'all' || property.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-100 text-green-800';
-      case 'occupied': return 'bg-blue-100 text-blue-800';
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'available':return 'bg-green-100 text-green-800';
+      case 'occupied':return 'bg-blue-100 text-blue-800';
+      case 'maintenance':return 'bg-yellow-100 text-yellow-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -273,7 +273,7 @@ const PropertyManagement: React.FC = () => {
                 security_deposit: 0,
                 status: 'available',
                 description: '',
-                image_url: '',
+                image_url: ''
               });
             }}>
               <Plus className="h-4 w-4 mr-2" />
@@ -293,8 +293,8 @@ const PropertyManagement: React.FC = () => {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+                  required />
+
               </div>
 
               <div>
@@ -303,8 +303,8 @@ const PropertyManagement: React.FC = () => {
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  required
-                />
+                  required />
+
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -346,8 +346,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.bedrooms}
-                    onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 0 })} />
+
                 </div>
                 <div>
                   <Label htmlFor="bathrooms">Bathrooms</Label>
@@ -356,8 +356,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 0 })} />
+
                 </div>
                 <div>
                   <Label htmlFor="square_feet">Square Feet</Label>
@@ -366,8 +366,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.square_feet}
-                    onChange={(e) => setFormData({ ...formData, square_feet: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, square_feet: parseInt(e.target.value) || 0 })} />
+
                 </div>
               </div>
 
@@ -380,8 +380,8 @@ const PropertyManagement: React.FC = () => {
                     min="0"
                     step="0.01"
                     value={formData.monthly_rent}
-                    onChange={(e) => setFormData({ ...formData, monthly_rent: parseFloat(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, monthly_rent: parseFloat(e.target.value) || 0 })} />
+
                 </div>
                 <div>
                   <Label htmlFor="security_deposit">Security Deposit ($)</Label>
@@ -391,8 +391,8 @@ const PropertyManagement: React.FC = () => {
                     min="0"
                     step="0.01"
                     value={formData.security_deposit}
-                    onChange={(e) => setFormData({ ...formData, security_deposit: parseFloat(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, security_deposit: parseFloat(e.target.value) || 0 })} />
+
                 </div>
               </div>
 
@@ -402,8 +402,8 @@ const PropertyManagement: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -427,8 +427,8 @@ const PropertyManagement: React.FC = () => {
             placeholder="Search properties..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+            className="pl-10" />
+
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full sm:w-40">
@@ -444,10 +444,10 @@ const PropertyManagement: React.FC = () => {
       </div>
 
       {/* Property Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+      {loading ?
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) =>
+        <Card key={i} className="animate-pulse">
               <CardHeader>
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
               </CardHeader>
@@ -458,19 +458,19 @@ const PropertyManagement: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : filteredProperties.length === 0 ? (
-        <Card>
+        )}
+        </div> :
+      filteredProperties.length === 0 ?
+      <Card>
           <CardContent className="text-center py-8">
             <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No properties found</p>
           </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
-            <Card key={property.id} className="hover:shadow-lg transition-shadow">
+        </Card> :
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProperties.map((property) =>
+        <Card key={property.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{property.name}</CardTitle>
@@ -498,9 +498,9 @@ const PropertyManagement: React.FC = () => {
                     <Bath className="h-4 w-4" />
                     <span>{property.bathrooms} bath</span>
                   </div>
-                  {property.square_feet > 0 && (
-                    <span>{property.square_feet} sqft</span>
-                  )}
+                  {property.square_feet > 0 &&
+              <span>{property.square_feet} sqft</span>
+              }
                 </div>
 
                 <div className="flex items-center space-x-2 text-sm font-semibold text-gray-900">
@@ -508,34 +508,34 @@ const PropertyManagement: React.FC = () => {
                   <span>${property.monthly_rent.toLocaleString()}/month</span>
                 </div>
 
-                {property.description && (
-                  <p className="text-sm text-gray-500 line-clamp-2">{property.description}</p>
-                )}
+                {property.description &&
+            <p className="text-sm text-gray-500 line-clamp-2">{property.description}</p>
+            }
 
                 <div className="flex justify-end space-x-2 pt-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(property)}
-                  >
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(property)}>
+
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(property)}
-                    className="text-red-600 hover:text-red-700"
-                  >
+                variant="outline"
+                size="sm"
+                onClick={() => handleDelete(property)}
+                className="text-red-600 hover:text-red-700">
+
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          ))}
+        )}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default PropertyManagement;

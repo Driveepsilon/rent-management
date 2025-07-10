@@ -18,12 +18,12 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: 'Error',
         description: 'Please fill in all fields',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -31,27 +31,27 @@ const LoginForm: React.FC = () => {
     try {
       setLoading(true);
       const { error } = await window.ezsite.apis.login({ email, password });
-      
+
       if (error) {
         toast({
           title: 'Login Failed',
           description: error,
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
 
       toast({
         title: 'Success',
-        description: 'Logged in successfully',
+        description: 'Logged in successfully'
       });
-      
+
       navigate('/');
     } catch (error) {
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -80,8 +80,8 @@ const LoginForm: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="mt-1"
-              />
+                className="mt-1" />
+
             </div>
 
             <div>
@@ -93,18 +93,18 @@ const LoginForm: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  required
-                />
+                  required />
+
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
+                  onClick={() => setShowPassword(!showPassword)}>
+
+                  {showPassword ?
+                  <EyeOff className="h-4 w-4 text-gray-400" /> :
+
+                  <Eye className="h-4 w-4 text-gray-400" />
+                  }
                 </button>
               </div>
             </div>
@@ -114,10 +114,10 @@ const LoginForm: React.FC = () => {
             </Button>
 
             <div className="text-center space-y-2">
-              <Link 
-                to="/forgot-password" 
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-500">
+
                 Forgot your password?
               </Link>
               <p className="text-sm text-gray-600">
@@ -130,8 +130,8 @@ const LoginForm: React.FC = () => {
           </form>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LoginForm;
