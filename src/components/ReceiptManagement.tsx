@@ -57,8 +57,8 @@ const ReceiptManagement: React.FC = () => {
   });
 
   const paymentMethods = [
-    'Cash', 'Check', 'Bank Transfer', 'Credit Card', 'Online Payment', 'Money Order'
-  ];
+  'Cash', 'Check', 'Bank Transfer', 'Credit Card', 'Online Payment', 'Money Order'];
+
 
   useEffect(() => {
     fetchPayments();
@@ -82,7 +82,7 @@ const ReceiptManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch payments",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -137,7 +137,7 @@ const ReceiptManagement: React.FC = () => {
       if (error) throw error;
 
       // Update invoice status to paid
-      const invoice = invoices.find(inv => inv.id === parseInt(formData.invoice_id));
+      const invoice = invoices.find((inv) => inv.id === parseInt(formData.invoice_id));
       if (invoice) {
         await window.ezsite.apis.tableUpdate(26867, {
           ID: invoice.id,
@@ -148,7 +148,7 @@ const ReceiptManagement: React.FC = () => {
 
       toast({
         title: "Success",
-        description: "Payment recorded successfully",
+        description: "Payment recorded successfully"
       });
 
       setIsCreateDialogOpen(false);
@@ -168,34 +168,34 @@ const ReceiptManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to record payment",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
 
   const getTenantName = (tenantId: number) => {
-    const tenant = tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find((t) => t.id === tenantId);
     return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
   };
 
   const getInvoiceNumber = (invoiceId: number) => {
-    const invoice = invoices.find(inv => inv.id === invoiceId);
+    const invoice = invoices.find((inv) => inv.id === invoiceId);
     return invoice ? invoice.invoice_number : 'Unknown';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'failed':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
   const generateReceiptPDF = (payment: Payment) => {
-    const tenant = tenants.find(t => t.id === payment.tenant_id);
-    const invoice = invoices.find(inv => inv.id === payment.invoice_id);
-    
+    const tenant = tenants.find((t) => t.id === payment.tenant_id);
+    const invoice = invoices.find((inv) => inv.id === payment.invoice_id);
+
     const receiptContent = `
       PAYMENT RECEIPT
       
@@ -231,7 +231,7 @@ const ReceiptManagement: React.FC = () => {
 
   const getFilteredInvoices = () => {
     if (!formData.tenant_id) return invoices;
-    return invoices.filter(invoice => invoice.tenant_id === parseInt(formData.tenant_id));
+    return invoices.filter((invoice) => invoice.tenant_id === parseInt(formData.tenant_id));
   };
 
   if (loading) {
@@ -260,31 +260,31 @@ const ReceiptManagement: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tenant">Tenant</Label>
-                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({...formData, tenant_id: value, invoice_id: ''})}>
+                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value, invoice_id: '' })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tenant" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tenants.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      {tenants.map((tenant) =>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.first_name} {tenant.last_name}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="invoice">Invoice</Label>
-                  <Select value={formData.invoice_id} onValueChange={(value) => setFormData({...formData, invoice_id: value})}>
+                  <Select value={formData.invoice_id} onValueChange={(value) => setFormData({ ...formData, invoice_id: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select invoice" />
                     </SelectTrigger>
                     <SelectContent>
-                      {getFilteredInvoices().map((invoice) => (
-                        <SelectItem key={invoice.id} value={invoice.id.toString()}>
+                      {getFilteredInvoices().map((invoice) =>
+                      <SelectItem key={invoice.id} value={invoice.id.toString()}>
                           {invoice.invoice_number} - ${invoice.amount.toFixed(2)}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -296,8 +296,8 @@ const ReceiptManagement: React.FC = () => {
                     id="payment_date"
                     type="date"
                     value={formData.payment_date}
-                    onChange={(e) => setFormData({...formData, payment_date: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })} />
+
                 </div>
                 <div>
                   <Label htmlFor="amount">Amount</Label>
@@ -306,23 +306,23 @@ const ReceiptManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="payment_method">Payment Method</Label>
-                  <Select value={formData.payment_method} onValueChange={(value) => setFormData({...formData, payment_method: value})}>
+                  <Select value={formData.payment_method} onValueChange={(value) => setFormData({ ...formData, payment_method: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
                     <SelectContent>
-                      {paymentMethods.map((method) => (
-                        <SelectItem key={method} value={method}>
+                      {paymentMethods.map((method) =>
+                      <SelectItem key={method} value={method}>
                           {method}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -331,9 +331,9 @@ const ReceiptManagement: React.FC = () => {
                   <Input
                     id="reference_number"
                     value={formData.reference_number}
-                    onChange={(e) => setFormData({...formData, reference_number: e.target.value})}
-                    placeholder="Check number, transaction ID, etc."
-                  />
+                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
+                    placeholder="Check number, transaction ID, etc." />
+
                 </div>
               </div>
               <div>
@@ -341,9 +341,9 @@ const ReceiptManagement: React.FC = () => {
                 <Textarea
                   id="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  placeholder="Additional notes about the payment"
-                />
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Additional notes about the payment" />
+
               </div>
               <Button onClick={handleCreatePayment} className="w-full">
                 Record Payment
@@ -354,8 +354,8 @@ const ReceiptManagement: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {payments.map((payment) => (
-          <Card key={payment.id}>
+        {payments.map((payment) =>
+        <Card key={payment.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -376,10 +376,10 @@ const ReceiptManagement: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateReceiptPDF(payment)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateReceiptPDF(payment)}>
+
                     <FileText className="h-4 w-4 mr-1" />
                     Download Receipt
                   </Button>
@@ -387,11 +387,11 @@ const ReceiptManagement: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
-      {payments.length === 0 && (
-        <Card>
+      {payments.length === 0 &&
+      <Card>
           <CardContent className="p-12 text-center">
             <Receipt className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No payments recorded yet</h3>
@@ -402,9 +402,9 @@ const ReceiptManagement: React.FC = () => {
             </Button>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default ReceiptManagement;

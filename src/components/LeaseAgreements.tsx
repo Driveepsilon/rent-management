@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, FileText, Calendar, User, Home, Edit, Eye } from 'lucide-react';
+import { Plus, FileText, Calendar, User, Home, Edit, Eye, IdCard } from 'lucide-react';
 
 interface LeaseAgreement {
   id: number;
@@ -21,6 +21,7 @@ interface LeaseAgreement {
   status: string;
   terms: string;
   created_date: string;
+  id_number: string;
 }
 
 interface Tenant {
@@ -56,7 +57,8 @@ const LeaseAgreements: React.FC = () => {
     lease_end_date: '',
     monthly_rent: '',
     security_deposit: '',
-    terms: ''
+    terms: '',
+    id_number: ''
   });
 
   useEffect(() => {
@@ -67,21 +69,31 @@ const LeaseAgreements: React.FC = () => {
 
   const fetchLeases = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26866, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to view lease agreements.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { data, error } = await window.ezsite.apis.tablePage('26866', {
         PageNo: 1,
         PageSize: 50,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: []
+        Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }]
       });
       if (error) throw error;
       setLeases(data.List || []);
     } catch (error) {
       console.error('Error fetching leases:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch lease agreements",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch lease agreements',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -90,12 +102,18 @@ const LeaseAgreements: React.FC = () => {
 
   const fetchTenants = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26864, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26864', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: [{ name: "status", op: "Equal", value: "active" }]
+        Filters: [
+          { name: 'user_id', op: 'Equal', value: userData.ID },
+          { name: 'status', op: 'Equal', value: 'active' }
+        ]
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -106,12 +124,18 @@ const LeaseAgreements: React.FC = () => {
 
   const fetchProperties = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26865, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26865', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: [{ name: "status", op: "Equal", value: "available" }]
+        Filters: [
+          { name: 'user_id', op: 'Equal', value: userData.ID },
+          { name: 'status', op: 'Equal', value: 'available' }
+        ]
       });
       if (error) throw error;
       setProperties(data.List || []);
@@ -122,7 +146,17 @@ const LeaseAgreements: React.FC = () => {
 
   const handleCreateLease = async () => {
     try {
-      const { error } = await window.ezsite.apis.tableCreate(26866, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to continue.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { error } = await window.ezsite.apis.tableCreate('26866', {
         tenant_id: parseInt(formData.tenant_id),
         property_id: parseInt(formData.property_id),
         lease_start_date: new Date(formData.lease_start_date).toISOString(),
@@ -131,15 +165,17 @@ const LeaseAgreements: React.FC = () => {
         security_deposit: parseFloat(formData.security_deposit),
         status: 'active',
         terms: formData.terms,
-        created_date: new Date().toISOString()
+        created_date: new Date().toISOString(),
+        id_number: formData.id_number,
+        user_id: userData.ID
       });
 
       if (error) throw error;
 
       // Update property status to occupied
-      const property = properties.find(p => p.id === parseInt(formData.property_id));
+      const property = properties.find((p) => p.id === parseInt(formData.property_id));
       if (property) {
-        await window.ezsite.apis.tableUpdate(26865, {
+        await window.ezsite.apis.tableUpdate('26865', {
           ID: property.id,
           ...property,
           status: 'occupied'
@@ -147,8 +183,8 @@ const LeaseAgreements: React.FC = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Lease agreement created successfully",
+        title: 'Success',
+        description: 'Lease agreement created successfully'
       });
 
       setIsCreateDialogOpen(false);
@@ -159,23 +195,24 @@ const LeaseAgreements: React.FC = () => {
         lease_end_date: '',
         monthly_rent: '',
         security_deposit: '',
-        terms: ''
+        terms: '',
+        id_number: ''
       });
       fetchLeases();
       fetchProperties();
     } catch (error) {
       console.error('Error creating lease:', error);
       toast({
-        title: "Error",
-        description: "Failed to create lease agreement",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to create lease agreement',
+        variant: 'destructive'
       });
     }
   };
 
   const handleStatusUpdate = async (lease: LeaseAgreement, newStatus: string) => {
     try {
-      const { error } = await window.ezsite.apis.tableUpdate(26866, {
+      const { error } = await window.ezsite.apis.tableUpdate('26866', {
         ID: lease.id,
         ...lease,
         status: newStatus
@@ -185,9 +222,9 @@ const LeaseAgreements: React.FC = () => {
 
       // If terminating lease, update property status to available
       if (newStatus === 'terminated') {
-        const property = properties.find(p => p.id === lease.property_id);
+        const property = properties.find((p) => p.id === lease.property_id);
         if (property) {
-          await window.ezsite.apis.tableUpdate(26865, {
+          await window.ezsite.apis.tableUpdate('26865', {
             ID: property.id,
             ...property,
             status: 'available'
@@ -196,8 +233,8 @@ const LeaseAgreements: React.FC = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Lease status updated successfully",
+        title: 'Success',
+        description: 'Lease status updated successfully'
       });
 
       fetchLeases();
@@ -205,20 +242,20 @@ const LeaseAgreements: React.FC = () => {
     } catch (error) {
       console.error('Error updating lease status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update lease status",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update lease status',
+        variant: 'destructive'
       });
     }
   };
 
   const getTenantName = (tenantId: number) => {
-    const tenant = tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find((t) => t.id === tenantId);
     return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
   };
 
   const getPropertyName = (propertyId: number) => {
-    const property = properties.find(p => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     return property ? property.name : 'Unknown';
   };
 
@@ -232,9 +269,9 @@ const LeaseAgreements: React.FC = () => {
   };
 
   const generateLeaseDocument = (lease: LeaseAgreement) => {
-    const tenant = tenants.find(t => t.id === lease.tenant_id);
-    const property = properties.find(p => p.id === lease.property_id);
-    
+    const tenant = tenants.find((t) => t.id === lease.tenant_id);
+    const property = properties.find((p) => p.id === lease.property_id);
+
     const leaseDocument = `
       RESIDENTIAL LEASE AGREEMENT
       
@@ -244,6 +281,7 @@ const LeaseAgreements: React.FC = () => {
       TENANT: ${tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown Tenant'}
       Email: ${tenant ? tenant.email : ''}
       Phone: ${tenant ? tenant.phone : ''}
+      ID Number: ${lease.id_number || 'Not provided'}
       
       PROPERTY DETAILS:
       Address: ${property ? property.address : 'Unknown Address'}
@@ -278,7 +316,7 @@ const LeaseAgreements: React.FC = () => {
   };
 
   const handlePropertySelect = (propertyId: string) => {
-    const property = properties.find(p => p.id === parseInt(propertyId));
+    const property = properties.find((p) => p.id === parseInt(propertyId));
     if (property) {
       setFormData({
         ...formData,
@@ -331,7 +369,7 @@ const LeaseAgreements: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tenant">Tenant</Label>
-                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({...formData, tenant_id: value})}>
+                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tenant" />
                     </SelectTrigger>
@@ -367,7 +405,7 @@ const LeaseAgreements: React.FC = () => {
                     id="lease_start_date"
                     type="date"
                     value={formData.lease_start_date}
-                    onChange={(e) => setFormData({...formData, lease_start_date: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, lease_start_date: e.target.value })}
                   />
                 </div>
                 <div>
@@ -376,7 +414,7 @@ const LeaseAgreements: React.FC = () => {
                     id="lease_end_date"
                     type="date"
                     value={formData.lease_end_date}
-                    onChange={(e) => setFormData({...formData, lease_end_date: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, lease_end_date: e.target.value })}
                   />
                 </div>
               </div>
@@ -388,7 +426,7 @@ const LeaseAgreements: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.monthly_rent}
-                    onChange={(e) => setFormData({...formData, monthly_rent: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, monthly_rent: e.target.value })}
                   />
                 </div>
                 <div>
@@ -398,16 +436,25 @@ const LeaseAgreements: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.security_deposit}
-                    onChange={(e) => setFormData({...formData, security_deposit: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, security_deposit: e.target.value })}
                   />
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="id_number">ID Number</Label>
+                <Input
+                  id="id_number"
+                  value={formData.id_number}
+                  onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
+                  placeholder="Enter tenant's ID number"
+                />
               </div>
               <div>
                 <Label htmlFor="terms">Lease Terms and Conditions</Label>
                 <Textarea
                   id="terms"
                   value={formData.terms || defaultTerms}
-                  onChange={(e) => setFormData({...formData, terms: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
                   placeholder="Enter lease terms and conditions"
                   className="min-h-[200px]"
                 />
@@ -436,6 +483,12 @@ const LeaseAgreements: React.FC = () => {
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Tenant:</strong> {getTenantName(lease.tenant_id)}</p>
                     <p><strong>Property:</strong> {getPropertyName(lease.property_id)}</p>
+                    {lease.id_number && (
+                      <p className="flex items-center gap-2">
+                        <IdCard className="h-4 w-4" />
+                        <strong>ID Number:</strong> {lease.id_number}
+                      </p>
+                    )}
                     <p><strong>Monthly Rent:</strong> ${lease.monthly_rent.toFixed(2)}</p>
                     <p><strong>Term:</strong> {new Date(lease.lease_start_date).toLocaleDateString()} - {new Date(lease.lease_end_date).toLocaleDateString()}</p>
                   </div>
@@ -505,6 +558,15 @@ const LeaseAgreements: React.FC = () => {
                   <p>{getPropertyName(selectedLease.property_id)}</p>
                 </div>
               </div>
+              {selectedLease.id_number && (
+                <div>
+                  <Label>ID Number</Label>
+                  <p className="flex items-center gap-2">
+                    <IdCard className="h-4 w-4" />
+                    {selectedLease.id_number}
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Start Date</Label>

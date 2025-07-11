@@ -66,7 +66,7 @@ const PaymentTrackingDashboard: React.FC = () => {
       const totalReceived = payments.reduce((sum: number, payment: any) => sum + payment.amount, 0);
       const pendingInvoices = invoices.filter((invoice: any) => invoice.status === 'pending');
       const pendingAmount = pendingInvoices.reduce((sum: number, invoice: any) => sum + invoice.amount, 0);
-      
+
       // Calculate overdue invoices
       const currentDate = new Date();
       const overdueInvoices = invoices.filter((invoice: any) => {
@@ -75,7 +75,7 @@ const PaymentTrackingDashboard: React.FC = () => {
       });
       const overdueAmount = overdueInvoices.reduce((sum: number, invoice: any) => sum + invoice.amount, 0);
 
-      const collectionRate = totalExpected > 0 ? (totalReceived / totalExpected) * 100 : 0;
+      const collectionRate = totalExpected > 0 ? totalReceived / totalExpected * 100 : 0;
 
       setPaymentData({
         totalExpected,
@@ -91,7 +91,7 @@ const PaymentTrackingDashboard: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch payment data",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -204,12 +204,12 @@ const PaymentTrackingDashboard: React.FC = () => {
             <CardTitle>Recent Payments</CardTitle>
           </CardHeader>
           <CardContent>
-            {paymentData.recentPayments.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No recent payments</p>
-            ) : (
-              <div className="space-y-2">
-                {paymentData.recentPayments.map((payment: any) => (
-                  <div key={payment.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            {paymentData.recentPayments.length === 0 ?
+            <p className="text-gray-500 text-center py-4">No recent payments</p> :
+
+            <div className="space-y-2">
+                {paymentData.recentPayments.map((payment: any) =>
+              <div key={payment.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <div>
                       <p className="font-medium">${payment.amount.toFixed(2)}</p>
                       <p className="text-sm text-gray-600">{payment.payment_method}</p>
@@ -221,9 +221,9 @@ const PaymentTrackingDashboard: React.FC = () => {
                       </Badge>
                     </div>
                   </div>
-                ))}
+              )}
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -235,12 +235,12 @@ const PaymentTrackingDashboard: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paymentData.overdueInvoices.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No overdue invoices</p>
-            ) : (
-              <div className="space-y-2">
-                {paymentData.overdueInvoices.map((invoice: any) => (
-                  <div key={invoice.id} className="flex justify-between items-center p-2 bg-red-50 rounded">
+            {paymentData.overdueInvoices.length === 0 ?
+            <p className="text-gray-500 text-center py-4">No overdue invoices</p> :
+
+            <div className="space-y-2">
+                {paymentData.overdueInvoices.map((invoice: any) =>
+              <div key={invoice.id} className="flex justify-between items-center p-2 bg-red-50 rounded">
                     <div>
                       <p className="font-medium">{invoice.invoice_number}</p>
                       <p className="text-sm text-gray-600">${invoice.amount.toFixed(2)}</p>
@@ -254,14 +254,14 @@ const PaymentTrackingDashboard: React.FC = () => {
                       </Badge>
                     </div>
                   </div>
-                ))}
+              )}
               </div>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PaymentTrackingDashboard;

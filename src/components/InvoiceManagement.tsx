@@ -79,7 +79,7 @@ const InvoiceManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch invoices",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -137,7 +137,7 @@ const InvoiceManagement: React.FC = () => {
 
       toast({
         title: "Success",
-        description: "Invoice created successfully",
+        description: "Invoice created successfully"
       });
 
       setIsCreateDialogOpen(false);
@@ -156,7 +156,7 @@ const InvoiceManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to create invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -173,7 +173,7 @@ const InvoiceManagement: React.FC = () => {
 
       toast({
         title: "Success",
-        description: "Invoice status updated successfully",
+        description: "Invoice status updated successfully"
       });
 
       fetchInvoices();
@@ -182,34 +182,34 @@ const InvoiceManagement: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to update invoice status",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
 
   const getTenantName = (tenantId: number) => {
-    const tenant = tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find((t) => t.id === tenantId);
     return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
   };
 
   const getPropertyName = (propertyId: number) => {
-    const property = properties.find(p => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     return property ? property.name : 'Unknown';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
   const generateInvoicePDF = (invoice: Invoice) => {
-    const tenant = tenants.find(t => t.id === invoice.tenant_id);
-    const property = properties.find(p => p.id === invoice.property_id);
-    
+    const tenant = tenants.find((t) => t.id === invoice.tenant_id);
+    const property = properties.find((p) => p.id === invoice.property_id);
+
     const invoiceContent = `
       INVOICE
       
@@ -269,31 +269,31 @@ const InvoiceManagement: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tenant">Tenant</Label>
-                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({...formData, tenant_id: value})}>
+                  <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tenant" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tenants.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      {tenants.map((tenant) =>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.first_name} {tenant.last_name}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="property">Property</Label>
-                  <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
+                  <Select value={formData.property_id} onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select property" />
                     </SelectTrigger>
                     <SelectContent>
-                      {properties.map((property) => (
-                        <SelectItem key={property.id} value={property.id.toString()}>
+                      {properties.map((property) =>
+                      <SelectItem key={property.id} value={property.id.toString()}>
                           {property.name}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -305,8 +305,8 @@ const InvoiceManagement: React.FC = () => {
                     id="invoice_date"
                     type="date"
                     value={formData.invoice_date}
-                    onChange={(e) => setFormData({...formData, invoice_date: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })} />
+
                 </div>
                 <div>
                   <Label htmlFor="due_date">Due Date</Label>
@@ -314,8 +314,8 @@ const InvoiceManagement: React.FC = () => {
                     id="due_date"
                     type="date"
                     value={formData.due_date}
-                    onChange={(e) => setFormData({...formData, due_date: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -326,8 +326,8 @@ const InvoiceManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+
                 </div>
                 <div>
                   <Label htmlFor="late_fee">Late Fee</Label>
@@ -336,8 +336,8 @@ const InvoiceManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.late_fee}
-                    onChange={(e) => setFormData({...formData, late_fee: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({ ...formData, late_fee: e.target.value })} />
+
                 </div>
               </div>
               <div>
@@ -345,9 +345,9 @@ const InvoiceManagement: React.FC = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Enter invoice description"
-                />
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter invoice description" />
+
               </div>
               <Button onClick={handleCreateInvoice} className="w-full">
                 Create Invoice
@@ -358,8 +358,8 @@ const InvoiceManagement: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {invoices.map((invoice) => (
-          <Card key={invoice.id}>
+        {invoices.map((invoice) =>
+        <Card key={invoice.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -379,42 +379,42 @@ const InvoiceManagement: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedInvoice(invoice);
-                      setIsViewDialogOpen(true);
-                    }}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedInvoice(invoice);
+                    setIsViewDialogOpen(true);
+                  }}>
+
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateInvoicePDF(invoice)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateInvoicePDF(invoice)}>
+
                     <FileText className="h-4 w-4 mr-1" />
                     Download
                   </Button>
-                  {invoice.status === 'pending' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusUpdate(invoice, 'paid')}
-                    >
+                  {invoice.status === 'pending' &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusUpdate(invoice, 'paid')}>
+
                       Mark Paid
                     </Button>
-                  )}
+                }
                 </div>
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
-      {selectedInvoice && (
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+      {selectedInvoice &&
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Invoice Details</DialogTitle>
@@ -475,9 +475,9 @@ const InvoiceManagement: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default InvoiceManagement;
