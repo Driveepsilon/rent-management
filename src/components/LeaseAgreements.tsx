@@ -70,11 +70,11 @@ const LeaseAgreements: React.FC = () => {
   });
 
   const paymentPeriodicityOptions = [
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Quarterly' },
-    { value: 'semi-annual', label: 'Semi-Annual' },
-    { value: 'annual', label: 'Annual' }
-  ];
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'semi-annual', label: 'Semi-Annual' },
+  { value: 'annual', label: 'Annual' }];
+
 
   useEffect(() => {
     fetchLeases();
@@ -126,9 +126,9 @@ const LeaseAgreements: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -148,9 +148,9 @@ const LeaseAgreements: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'available' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'available' }]
+
       });
       if (error) throw error;
       setProperties(data.List || []);
@@ -286,10 +286,10 @@ const LeaseAgreements: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'expired': return 'bg-yellow-100 text-yellow-800';
-      case 'terminated': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':return 'bg-green-100 text-green-800';
+      case 'expired':return 'bg-yellow-100 text-yellow-800';
+      case 'terminated':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -414,7 +414,7 @@ const LeaseAgreements: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {tenants.map((tenant) =>
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.tenant_name} - {tenant.id_number}
                         </SelectItem>
                       )}
@@ -437,7 +437,7 @@ const LeaseAgreements: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {properties.map((property) =>
-                        <SelectItem key={property.id} value={property.id.toString()}>
+                      <SelectItem key={property.id} value={property.id.toString()}>
                           {property.name} - {property.address}
                         </SelectItem>
                       )}
@@ -509,7 +509,7 @@ const LeaseAgreements: React.FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {paymentPeriodicityOptions.map((option) =>
-                            <SelectItem key={option.value} value={option.value}>
+                          <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
                           )}
@@ -541,7 +541,7 @@ const LeaseAgreements: React.FC = () => {
         {leases.map((lease) => {
           const tenant = getTenant(lease.tenant_id);
           const property = getProperty(lease.property_id);
-          
+
           return (
             <Card key={lease.id}>
               <CardContent className="p-6">
@@ -600,23 +600,23 @@ const LeaseAgreements: React.FC = () => {
                       Download
                     </Button>
                     {lease.status === 'active' &&
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleStatusUpdate(lease, 'terminated')}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusUpdate(lease, 'terminated')}>
                         Terminate
                       </Button>
                     }
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
       {selectedLease &&
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Lease Agreement Details</DialogTitle>
@@ -637,9 +637,9 @@ const LeaseAgreements: React.FC = () => {
               
               {/* Tenant Information */}
               {(() => {
-                const tenant = getTenant(selectedLease.tenant_id);
-                return tenant ? (
-                  <div className="bg-blue-50 p-4 rounded-lg">
+              const tenant = getTenant(selectedLease.tenant_id);
+              return tenant ?
+              <div className="bg-blue-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Tenant Information</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
@@ -659,15 +659,15 @@ const LeaseAgreements: React.FC = () => {
                         <p>{tenant.address}</p>
                       </div>
                     </div>
-                  </div>
-                ) : null;
-              })()}
+                  </div> :
+              null;
+            })()}
               
               {/* Property Information */}
               {(() => {
-                const property = getProperty(selectedLease.property_id);
-                return property ? (
-                  <div className="bg-green-50 p-4 rounded-lg">
+              const property = getProperty(selectedLease.property_id);
+              return property ?
+              <div className="bg-green-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Property Information</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
@@ -691,9 +691,9 @@ const LeaseAgreements: React.FC = () => {
                         <p>{property.bathrooms}</p>
                       </div>
                     </div>
-                  </div>
-                ) : null;
-              })()}
+                  </div> :
+              null;
+            })()}
               
               {/* Lease Agreement Information */}
               <div className="bg-yellow-50 p-4 rounded-lg">
@@ -742,7 +742,7 @@ const LeaseAgreements: React.FC = () => {
       }
 
       {leases.length === 0 &&
-        <Card>
+      <Card>
           <CardContent className="p-12 text-center">
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No lease agreements yet</h3>
@@ -754,8 +754,8 @@ const LeaseAgreements: React.FC = () => {
           </CardContent>
         </Card>
       }
-    </div>
-  );
+    </div>);
+
 };
 
 export default LeaseAgreements;

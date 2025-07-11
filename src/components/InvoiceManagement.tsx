@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle, Mail } from 'lucide-react';
 import { numberToWords } from '@/utils/numberToWords';
+import EmailDialog from '@/components/EmailDialog';
 
 interface Invoice {
   id: number;
@@ -48,7 +48,10 @@ const InvoiceManagement: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -115,9 +118,9 @@ const InvoiceManagement: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -160,7 +163,7 @@ const InvoiceManagement: React.FC = () => {
       const invoiceNumber = `INV-${Date.now()}`;
       const amount = parseFloat(formData.amount);
       const amountInLetters = numberToWords(amount);
-      
+
       const { error } = await window.ezsite.apis.tableCreate('26867', {
         tenant_id: parseInt(formData.tenant_id),
         property_id: parseInt(formData.property_id),
@@ -235,6 +238,34 @@ const InvoiceManagement: React.FC = () => {
     }
   };
 
+  const handleSendEmail = (invoice: Invoice) => {
+    const tenant = tenants.find(t => t.id === invoice.tenant_id);
+    const property = properties.find(p => p.id === invoice.property_id);
+    
+    if (!tenant) {
+      toast({
+        title: 'Error',
+        description: 'Tenant not found for this invoice',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!property) {
+      toast({
+        title: 'Error',
+        description: 'Property not found for this invoice',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSelectedInvoice(invoice);
+    setSelectedTenant(tenant);
+    setSelectedProperty(property);
+    setIsEmailDialogOpen(true);
+  };
+
   const getTenantName = (tenantId: number) => {
     const tenant = tenants.find((t) => t.id === tenantId);
     return tenant ? tenant.tenant_name : 'Unknown';
@@ -247,10 +278,10 @@ const InvoiceManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -339,7 +370,7 @@ const InvoiceManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {tenants.map((tenant) =>
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.tenant_name}
                         </SelectItem>
                       )}
@@ -354,7 +385,7 @@ const InvoiceManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {properties.map((property) =>
-                        <SelectItem key={property.id} value={property.id.toString()}>
+                      <SelectItem key={property.id} value={property.id.toString()}>
                           {property.name}
                         </SelectItem>
                       )}
@@ -408,11 +439,11 @@ const InvoiceManagement: React.FC = () => {
                     step="0.01"
                     value={formData.amount}
                     onChange={(e) => handleAmountChange(e.target.value)} />
-                  {formData.amount && (
-                    <p className="text-xs text-gray-500 mt-1">
+                  {formData.amount &&
+                  <p className="text-xs text-gray-500 mt-1">
                       In words: {getCurrentAmountInWords()}
                     </p>
-                  )}
+                  }
                 </div>
                 <div>
                   <Label htmlFor="late_fee">Late Fee</Label>
@@ -451,7 +482,7 @@ const InvoiceManagement: React.FC = () => {
 
       <div className="grid gap-4">
         {invoices.map((invoice) =>
-          <Card key={invoice.id}>
+        <Card key={invoice.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -476,28 +507,36 @@ const InvoiceManagement: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setSelectedInvoice(invoice);
-                      setIsViewDialogOpen(true);
-                    }}>
+                    onClick={() => handleSendEmail(invoice)}
+                  >
+                    <Mail className="h-4 w-4 mr-1" />
+                    Send Email
+                  </Button>
+                  <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedInvoice(invoice);
+                    setIsViewDialogOpen(true);
+                  }}>
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateInvoicePDF(invoice)}>
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateInvoicePDF(invoice)}>
                     <FileText className="h-4 w-4 mr-1" />
                     Download
                   </Button>
                   {invoice.status === 'pending' &&
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusUpdate(invoice, 'paid')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusUpdate(invoice, 'paid')}>
                       Mark Paid
                     </Button>
-                  }
+                }
                 </div>
               </div>
             </CardContent>
@@ -506,7 +545,7 @@ const InvoiceManagement: React.FC = () => {
       </div>
 
       {selectedInvoice &&
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Invoice Details</DialogTitle>
@@ -589,8 +628,20 @@ const InvoiceManagement: React.FC = () => {
         </Dialog>
       }
 
+      {/* Email Dialog */}
+      {selectedInvoice && selectedTenant && selectedProperty && (
+        <EmailDialog
+          open={isEmailDialogOpen}
+          onOpenChange={setIsEmailDialogOpen}
+          type="invoice"
+          data={selectedInvoice}
+          tenant={selectedTenant}
+          property={selectedProperty}
+        />
+      )}
+
       {invoices.length === 0 &&
-        <Card>
+      <Card>
           <CardContent className="p-12 text-center">
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
@@ -602,8 +653,8 @@ const InvoiceManagement: React.FC = () => {
           </CardContent>
         </Card>
       }
-    </div>
-  );
+    </div>);
+
 };
 
 export default InvoiceManagement;

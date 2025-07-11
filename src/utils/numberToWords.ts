@@ -1,14 +1,14 @@
 
 export function numberToWords(number: number): string {
   const ones = [
-    '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
-    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
-    'seventeen', 'eighteen', 'nineteen'
-  ];
+  '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+  'seventeen', 'eighteen', 'nineteen'];
+
 
   const tens = [
-    '', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'
-  ];
+  '', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
 
   const scales = ['', 'thousand', 'million', 'billion', 'trillion'];
 
@@ -25,12 +25,12 @@ export function numberToWords(number: number): string {
     const chunk = num % 1000;
     if (chunk !== 0) {
       let chunkText = '';
-      
+
       const hundreds = Math.floor(chunk / 100);
       if (hundreds > 0) {
         chunkText += ones[hundreds] + ' hundred ';
       }
-      
+
       const remainder = chunk % 100;
       if (remainder < 20) {
         chunkText += ones[remainder];
@@ -42,14 +42,14 @@ export function numberToWords(number: number): string {
           chunkText += '-' + ones[onesDigit];
         }
       }
-      
+
       if (scales[scaleIndex]) {
         chunkText += ' ' + scales[scaleIndex];
       }
-      
+
       result = chunkText + ' ' + result;
     }
-    
+
     num = Math.floor(num / 1000);
     scaleIndex++;
   }

@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Receipt, FileText, DollarSign, Calendar, User } from 'lucide-react';
+import { Plus, Receipt, FileText, DollarSign, Calendar, User, Mail } from 'lucide-react';
+import EmailDialog from '@/components/EmailDialog';
 
 interface Payment {
   id: number;
@@ -33,8 +34,7 @@ interface Invoice {
 
 interface Tenant {
   id: number;
-  first_name: string;
-  last_name: string;
+  tenant_name: string;
   email: string;
 }
 
@@ -43,6 +43,10 @@ const ReceiptManagement: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -68,21 +72,31 @@ const ReceiptManagement: React.FC = () => {
 
   const fetchPayments = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26868, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to view payments.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { data, error } = await window.ezsite.apis.tablePage('26868', {
         PageNo: 1,
         PageSize: 50,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: []
+        Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }]
       });
       if (error) throw error;
       setPayments(data.List || []);
     } catch (error) {
       console.error('Error fetching payments:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch payments",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch payments',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -91,12 +105,18 @@ const ReceiptManagement: React.FC = () => {
 
   const fetchInvoices = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26867, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26867', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: [{ name: "status", op: "Equal", value: "pending" }]
+        Filters: [
+          { name: 'user_id', op: 'Equal', value: userData.ID },
+          { name: 'status', op: 'Equal', value: 'pending' }
+        ]
       });
       if (error) throw error;
       setInvoices(data.List || []);
@@ -107,12 +127,18 @@ const ReceiptManagement: React.FC = () => {
 
   const fetchTenants = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26864, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26864', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: [{ name: "status", op: "Equal", value: "active" }]
+        Filters: [
+          { name: 'user_id', op: 'Equal', value: userData.ID },
+          { name: 'status', op: 'Equal', value: 'active' }
+        ]
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -123,7 +149,17 @@ const ReceiptManagement: React.FC = () => {
 
   const handleCreatePayment = async () => {
     try {
-      const { error } = await window.ezsite.apis.tableCreate(26868, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to continue.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { error } = await window.ezsite.apis.tableCreate('26868', {
         tenant_id: parseInt(formData.tenant_id),
         invoice_id: parseInt(formData.invoice_id),
         payment_date: new Date(formData.payment_date).toISOString(),
@@ -131,7 +167,8 @@ const ReceiptManagement: React.FC = () => {
         payment_method: formData.payment_method,
         reference_number: formData.reference_number,
         notes: formData.notes,
-        status: 'completed'
+        status: 'completed',
+        user_id: userData.ID
       });
 
       if (error) throw error;
@@ -139,7 +176,7 @@ const ReceiptManagement: React.FC = () => {
       // Update invoice status to paid
       const invoice = invoices.find((inv) => inv.id === parseInt(formData.invoice_id));
       if (invoice) {
-        await window.ezsite.apis.tableUpdate(26867, {
+        await window.ezsite.apis.tableUpdate('26867', {
           ID: invoice.id,
           ...invoice,
           status: 'paid'
@@ -147,8 +184,8 @@ const ReceiptManagement: React.FC = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Payment recorded successfully"
+        title: 'Success',
+        description: 'Payment recorded successfully'
       });
 
       setIsCreateDialogOpen(false);
@@ -166,16 +203,35 @@ const ReceiptManagement: React.FC = () => {
     } catch (error) {
       console.error('Error creating payment:', error);
       toast({
-        title: "Error",
-        description: "Failed to record payment",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to record payment',
+        variant: 'destructive'
       });
     }
   };
 
+  const handleSendEmail = (payment: Payment) => {
+    const tenant = tenants.find(t => t.id === payment.tenant_id);
+    const invoice = invoices.find(i => i.id === payment.invoice_id);
+    
+    if (!tenant) {
+      toast({
+        title: 'Error',
+        description: 'Tenant not found for this payment',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSelectedPayment(payment);
+    setSelectedTenant(tenant);
+    setSelectedInvoice(invoice || null);
+    setIsEmailDialogOpen(true);
+  };
+
   const getTenantName = (tenantId: number) => {
     const tenant = tenants.find((t) => t.id === tenantId);
-    return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
+    return tenant ? tenant.tenant_name : 'Unknown';
   };
 
   const getInvoiceNumber = (invoiceId: number) => {
@@ -203,7 +259,7 @@ const ReceiptManagement: React.FC = () => {
       Payment Date: ${new Date(payment.payment_date).toLocaleDateString()}
       
       Received From:
-      ${tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown Tenant'}
+      ${tenant ? tenant.tenant_name : 'Unknown Tenant'}
       ${tenant ? tenant.email : ''}
       
       Payment Details:
@@ -267,7 +323,7 @@ const ReceiptManagement: React.FC = () => {
                     <SelectContent>
                       {tenants.map((tenant) =>
                       <SelectItem key={tenant.id} value={tenant.id.toString()}>
-                          {tenant.first_name} {tenant.last_name}
+                          {tenant.tenant_name}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -376,6 +432,14 @@ const ReceiptManagement: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSendEmail(payment)}
+                  >
+                    <Mail className="h-4 w-4 mr-1" />
+                    Send Email
+                  </Button>
+                  <Button
                   variant="outline"
                   size="sm"
                   onClick={() => generateReceiptPDF(payment)}>
@@ -389,6 +453,18 @@ const ReceiptManagement: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Email Dialog */}
+      {selectedPayment && selectedTenant && (
+        <EmailDialog
+          open={isEmailDialogOpen}
+          onOpenChange={setIsEmailDialogOpen}
+          type="receipt"
+          data={selectedPayment}
+          tenant={selectedTenant}
+          invoice={selectedInvoice}
+        />
+      )}
 
       {payments.length === 0 &&
       <Card>

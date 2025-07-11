@@ -38,7 +38,7 @@ interface TenantContact {
 
 const TenantManagement: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [tenantContacts, setTenantContacts] = useState<{ [key: number]: TenantContact[] }>({});
+  const [tenantContacts, setTenantContacts] = useState<{[key: number]: TenantContact[];}>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -61,8 +61,8 @@ const TenantManagement: React.FC = () => {
   });
 
   const [contacts, setContacts] = useState<TenantContact[]>([
-    { contact_name: '', contact_phone: '', contact_email: '' }
-  ]);
+  { contact_name: '', contact_phone: '', contact_email: '' }]
+  );
 
   const titleOptions = ['Mr', 'Mrs', 'Sir', 'Company'];
   const idTypeOptions = ['Passport', 'ID', 'Company Registration Number'];
@@ -102,7 +102,7 @@ const TenantManagement: React.FC = () => {
       }
 
       setTenants(data?.List || []);
-      
+
       // Load contacts for each tenant
       const tenantIds = (data?.List || []).map((tenant: Tenant) => tenant.id);
       await loadTenantContacts(tenantIds);
@@ -132,7 +132,7 @@ const TenantManagement: React.FC = () => {
 
       if (error) return;
 
-      const contactsByTenant: { [key: number]: TenantContact[] } = {};
+      const contactsByTenant: {[key: number]: TenantContact[];} = {};
       (data?.List || []).forEach((contact: any) => {
         if (!contactsByTenant[contact.tenant_id]) {
           contactsByTenant[contact.tenant_id] = [];
@@ -208,7 +208,7 @@ const TenantManagement: React.FC = () => {
         }
 
         tenantId = editingTenant.id;
-        
+
         // Delete existing contacts for this tenant
         const existingContacts = tenantContacts[tenantId] || [];
         for (const contact of existingContacts) {
@@ -279,11 +279,11 @@ const TenantManagement: React.FC = () => {
       status: tenant.status,
       notes: tenant.notes
     });
-    
+
     // Load contacts for this tenant
     const existingContacts = tenantContacts[tenant.id] || [];
     setContacts(existingContacts.length > 0 ? existingContacts : [{ contact_name: '', contact_phone: '', contact_email: '' }]);
-    
+
     setEditingTenant(tenant);
     setShowAddDialog(true);
   };
@@ -328,9 +328,9 @@ const TenantManagement: React.FC = () => {
 
   const filteredTenants = tenants.filter((tenant) => {
     const matchesSearch =
-      tenant.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tenant.id_number && tenant.id_number.toLowerCase().includes(searchTerm.toLowerCase()));
+    tenant.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.id_number && tenant.id_number.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === 'all' || tenant.status === filterStatus;
 
@@ -339,10 +339,10 @@ const TenantManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':return 'bg-green-100 text-green-800';
+      case 'inactive':return 'bg-gray-100 text-gray-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -393,7 +393,7 @@ const TenantManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {titleOptions.map((title) =>
-                        <SelectItem key={title} value={title}>{title}</SelectItem>
+                      <SelectItem key={title} value={title}>{title}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -407,7 +407,7 @@ const TenantManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {idTypeOptions.map((type) =>
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -475,50 +475,50 @@ const TenantManagement: React.FC = () => {
                     Add Contact
                   </Button>
                 </div>
-                {contacts.map((contact, index) => (
-                  <div key={index} className="border rounded-lg p-3 space-y-2">
+                {contacts.map((contact, index) =>
+                <div key={index} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-medium">Contact {index + 1}</Label>
-                      {contacts.length > 1 && (
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => removeContact(index)}
-                        >
+                      {contacts.length > 1 &&
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeContact(index)}>
+
                           <X className="h-4 w-4" />
                         </Button>
-                      )}
+                    }
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <div>
                         <Label htmlFor={`contact_name_${index}`}>Name</Label>
                         <Input
-                          id={`contact_name_${index}`}
-                          value={contact.contact_name}
-                          onChange={(e) => updateContact(index, 'contact_name', e.target.value)}
-                          placeholder="Contact name" />
+                        id={`contact_name_${index}`}
+                        value={contact.contact_name}
+                        onChange={(e) => updateContact(index, 'contact_name', e.target.value)}
+                        placeholder="Contact name" />
                       </div>
                       <div>
                         <Label htmlFor={`contact_phone_${index}`}>Phone</Label>
                         <Input
-                          id={`contact_phone_${index}`}
-                          value={contact.contact_phone}
-                          onChange={(e) => updateContact(index, 'contact_phone', e.target.value)}
-                          placeholder="Phone number" />
+                        id={`contact_phone_${index}`}
+                        value={contact.contact_phone}
+                        onChange={(e) => updateContact(index, 'contact_phone', e.target.value)}
+                        placeholder="Phone number" />
                       </div>
                       <div>
                         <Label htmlFor={`contact_email_${index}`}>Email</Label>
                         <Input
-                          id={`contact_email_${index}`}
-                          type="email"
-                          value={contact.contact_email}
-                          onChange={(e) => updateContact(index, 'contact_email', e.target.value)}
-                          placeholder="Email address" />
+                        id={`contact_email_${index}`}
+                        type="email"
+                        value={contact.contact_email}
+                        onChange={(e) => updateContact(index, 'contact_email', e.target.value)}
+                        placeholder="Email address" />
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
 
               <div>
@@ -590,9 +590,9 @@ const TenantManagement: React.FC = () => {
 
       {/* Tenant Cards */}
       {loading ?
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) =>
-            <Card key={i} className="animate-pulse">
+        <Card key={i} className="animate-pulse">
               <CardHeader>
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
               </CardHeader>
@@ -603,19 +603,19 @@ const TenantManagement: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
+        )}
         </div> :
-        filteredTenants.length === 0 ?
-          <Card>
+      filteredTenants.length === 0 ?
+      <Card>
             <CardContent className="text-center py-8">
               <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">No tenants found</p>
             </CardContent>
           </Card> :
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTenants.map((tenant) =>
-              <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
+        <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -633,58 +633,58 @@ const TenantManagement: React.FC = () => {
                     <span>{tenant.email}</span>
                   </div>
                   {tenant.phone &&
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Phone className="h-4 w-4" />
                       <span>{tenant.phone}</span>
                     </div>
-                  }
+            }
                   {tenant.id_number &&
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <IdCard className="h-4 w-4" />
                       <span>{tenant.id_number}</span>
                     </div>
-                  }
+            }
                   {tenant.address &&
-                    <p className="text-sm text-gray-600">{tenant.address}</p>
-                  }
+            <p className="text-sm text-gray-600">{tenant.address}</p>
+            }
                   
                   {/* Display contacts */}
-                  {tenantContacts[tenant.id] && tenantContacts[tenant.id].length > 0 && (
-                    <div className="text-sm text-gray-600">
+                  {tenantContacts[tenant.id] && tenantContacts[tenant.id].length > 0 &&
+            <div className="text-sm text-gray-600">
                       <div className="font-medium mb-1">Contacts:</div>
-                      {tenantContacts[tenant.id].map((contact, index) => (
-                        <div key={index} className="text-xs ml-2">
+                      {tenantContacts[tenant.id].map((contact, index) =>
+              <div key={index} className="text-xs ml-2">
                           {contact.contact_name} - {contact.contact_phone}
                         </div>
-                      ))}
+              )}
                     </div>
-                  )}
+            }
                   
                   {tenant.notes &&
-                    <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
-                  }
+            <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
+            }
                   <div className="flex justify-end space-x-2 pt-2">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(tenant)}>
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(tenant)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(tenant)}
-                      className="text-red-600 hover:text-red-700">
+                variant="outline"
+                size="sm"
+                onClick={() => handleDelete(tenant)}
+                className="text-red-600 hover:text-red-700">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardContent>
               </Card>
-            )}
+        )}
           </div>
       }
-    </div>
-  );
+    </div>);
+
 };
 
 export default TenantManagement;
