@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,26 +8,37 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Mail, Phone, User, Search, IdCard } from 'lucide-react';
+import { Plus, Edit, Trash2, Mail, Phone, User, Search, IdCard, X, UserPlus } from 'lucide-react';
 
 interface Tenant {
   id: number;
-  title: string;
-  first_name: string;
-  last_name: string;
+  tenant_name: string;
+  id_number: string;
+  diplomatic: boolean;
   email: string;
   phone: string;
   address: string;
-  id_type: string;
   emergency_contact: string;
   status: string;
   notes: string;
+  title: string;
+  id_type: string;
   user_id: number;
+}
+
+interface TenantContact {
+  id?: number;
+  tenant_id?: number;
+  contact_name: string;
+  contact_phone: string;
+  contact_email: string;
 }
 
 const TenantManagement: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [tenantContacts, setTenantContacts] = useState<{ [key: number]: TenantContact[] }>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -36,8 +48,9 @@ const TenantManagement: React.FC = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    first_name: '',
-    last_name: '',
+    tenant_name: '',
+    id_number: '',
+    diplomatic: false,
     email: '',
     phone: '',
     address: '',
@@ -46,6 +59,10 @@ const TenantManagement: React.FC = () => {
     status: 'active',
     notes: ''
   });
+
+  const [contacts, setContacts] = useState<TenantContact[]>([
+    { contact_name: '', contact_phone: '', contact_email: '' }
+  ]);
 
   const titleOptions = ['Mr', 'Mrs', 'Sir', 'Company'];
   const idTypeOptions = ['Passport', 'ID', 'Company Registration Number'];
@@ -85,6 +102,10 @@ const TenantManagement: React.FC = () => {
       }
 
       setTenants(data?.List || []);
+      
+      // Load contacts for each tenant
+      const tenantIds = (data?.List || []).map((tenant: Tenant) => tenant.id);
+      await loadTenantContacts(tenantIds);
     } catch (error) {
       toast({
         title: 'Error',
@@ -96,10 +117,55 @@ const TenantManagement: React.FC = () => {
     }
   };
 
+  const loadTenantContacts = async (tenantIds: number[]) => {
+    try {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('27113', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: 'ID',
+        IsAsc: false,
+        Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }]
+      });
+
+      if (error) return;
+
+      const contactsByTenant: { [key: number]: TenantContact[] } = {};
+      (data?.List || []).forEach((contact: any) => {
+        if (!contactsByTenant[contact.tenant_id]) {
+          contactsByTenant[contact.tenant_id] = [];
+        }
+        contactsByTenant[contact.tenant_id].push(contact);
+      });
+
+      setTenantContacts(contactsByTenant);
+    } catch (error) {
+      console.error('Failed to load tenant contacts:', error);
+    }
+  };
+
+  const addContact = () => {
+    setContacts([...contacts, { contact_name: '', contact_phone: '', contact_email: '' }]);
+  };
+
+  const removeContact = (index: number) => {
+    if (contacts.length > 1) {
+      setContacts(contacts.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateContact = (index: number, field: keyof TenantContact, value: string) => {
+    const updatedContacts = [...contacts];
+    updatedContacts[index] = { ...updatedContacts[index], [field]: value };
+    setContacts(updatedContacts);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.first_name || !formData.last_name || !formData.email) {
+    if (!formData.tenant_name || !formData.email) {
       toast({
         title: 'Error',
         description: 'Please fill in all required fields',
@@ -124,6 +190,8 @@ const TenantManagement: React.FC = () => {
         user_id: userData.ID
       };
 
+      let tenantId: number;
+
       if (editingTenant) {
         const { error } = await window.ezsite.apis.tableUpdate('26864', {
           ID: editingTenant.id,
@@ -139,12 +207,22 @@ const TenantManagement: React.FC = () => {
           return;
         }
 
+        tenantId = editingTenant.id;
+        
+        // Delete existing contacts for this tenant
+        const existingContacts = tenantContacts[tenantId] || [];
+        for (const contact of existingContacts) {
+          if (contact.id) {
+            await window.ezsite.apis.tableDelete('27113', { ID: contact.id });
+          }
+        }
+
         toast({
           title: 'Success',
           description: 'Tenant updated successfully'
         });
       } else {
-        const { error } = await window.ezsite.apis.tableCreate('26864', tenantData);
+        const { data: newTenant, error } = await window.ezsite.apis.tableCreate('26864', tenantData);
 
         if (error) {
           toast({
@@ -155,24 +233,26 @@ const TenantManagement: React.FC = () => {
           return;
         }
 
+        tenantId = newTenant?.id || 0;
+
         toast({
           title: 'Success',
           description: 'Tenant added successfully'
         });
       }
 
-      setFormData({
-        title: '',
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
-        address: '',
-        id_type: '',
-        emergency_contact: '',
-        status: 'active',
-        notes: ''
-      });
+      // Save contacts
+      for (const contact of contacts) {
+        if (contact.contact_name || contact.contact_phone || contact.contact_email) {
+          await window.ezsite.apis.tableCreate('27113', {
+            tenant_id: tenantId,
+            user_id: userData.ID,
+            ...contact
+          });
+        }
+      }
+
+      resetForm();
       setEditingTenant(null);
       setShowAddDialog(false);
       loadTenants();
@@ -188,8 +268,9 @@ const TenantManagement: React.FC = () => {
   const handleEdit = (tenant: Tenant) => {
     setFormData({
       title: tenant.title || '',
-      first_name: tenant.first_name,
-      last_name: tenant.last_name,
+      tenant_name: tenant.tenant_name,
+      id_number: tenant.id_number || '',
+      diplomatic: tenant.diplomatic || false,
       email: tenant.email,
       phone: tenant.phone,
       address: tenant.address,
@@ -198,6 +279,11 @@ const TenantManagement: React.FC = () => {
       status: tenant.status,
       notes: tenant.notes
     });
+    
+    // Load contacts for this tenant
+    const existingContacts = tenantContacts[tenant.id] || [];
+    setContacts(existingContacts.length > 0 ? existingContacts : [{ contact_name: '', contact_phone: '', contact_email: '' }]);
+    
     setEditingTenant(tenant);
     setShowAddDialog(true);
   };
@@ -217,6 +303,14 @@ const TenantManagement: React.FC = () => {
         return;
       }
 
+      // Delete associated contacts
+      const existingContacts = tenantContacts[tenant.id] || [];
+      for (const contact of existingContacts) {
+        if (contact.id) {
+          await window.ezsite.apis.tableDelete('27113', { ID: contact.id });
+        }
+      }
+
       toast({
         title: 'Success',
         description: 'Tenant deleted successfully'
@@ -234,9 +328,9 @@ const TenantManagement: React.FC = () => {
 
   const filteredTenants = tenants.filter((tenant) => {
     const matchesSearch =
-      tenant.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(searchTerm.toLowerCase());
+      tenant.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tenant.id_number && tenant.id_number.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus = filterStatus === 'all' || tenant.status === filterStatus;
 
@@ -255,8 +349,9 @@ const TenantManagement: React.FC = () => {
   const resetForm = () => {
     setFormData({
       title: '',
-      first_name: '',
-      last_name: '',
+      tenant_name: '',
+      id_number: '',
+      diplomatic: false,
       email: '',
       phone: '',
       address: '',
@@ -265,6 +360,7 @@ const TenantManagement: React.FC = () => {
       status: 'active',
       notes: ''
     });
+    setContacts([{ contact_name: '', contact_phone: '', contact_email: '' }]);
   };
 
   return (
@@ -281,7 +377,7 @@ const TenantManagement: React.FC = () => {
               Add Tenant
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingTenant ? 'Edit Tenant' : 'Add New Tenant'}
@@ -296,9 +392,9 @@ const TenantManagement: React.FC = () => {
                       <SelectValue placeholder="Select title" />
                     </SelectTrigger>
                     <SelectContent>
-                      {titleOptions.map((title) => (
+                      {titleOptions.map((title) =>
                         <SelectItem key={title} value={title}>{title}</SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -310,9 +406,9 @@ const TenantManagement: React.FC = () => {
                       <SelectValue placeholder="Select ID type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {idTypeOptions.map((type) => (
+                      {idTypeOptions.map((type) =>
                         <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -320,23 +416,28 @@ const TenantManagement: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="first_name">First Name *</Label>
+                  <Label htmlFor="tenant_name">Tenant Name *</Label>
                   <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    required
-                  />
+                    id="tenant_name"
+                    value={formData.tenant_name}
+                    onChange={(e) => setFormData({ ...formData, tenant_name: e.target.value })}
+                    required />
                 </div>
                 <div>
-                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Label htmlFor="id_number">ID Number</Label>
                   <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    required
-                  />
+                    id="id_number"
+                    value={formData.id_number}
+                    onChange={(e) => setFormData({ ...formData, id_number: e.target.value })} />
                 </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="diplomatic"
+                  checked={formData.diplomatic}
+                  onCheckedChange={(checked) => setFormData({ ...formData, diplomatic: checked as boolean })} />
+                <Label htmlFor="diplomatic">Diplomatic Status</Label>
               </div>
 
               <div>
@@ -346,8 +447,7 @@ const TenantManagement: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
+                  required />
               </div>
 
               <div>
@@ -355,8 +455,7 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
               </div>
 
               <div>
@@ -364,8 +463,62 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+              </div>
+
+              {/* Contact Information Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Contact Information</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addContact}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Contact
+                  </Button>
+                </div>
+                {contacts.map((contact, index) => (
+                  <div key={index} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Contact {index + 1}</Label>
+                      {contacts.length > 1 && (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => removeContact(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div>
+                        <Label htmlFor={`contact_name_${index}`}>Name</Label>
+                        <Input
+                          id={`contact_name_${index}`}
+                          value={contact.contact_name}
+                          onChange={(e) => updateContact(index, 'contact_name', e.target.value)}
+                          placeholder="Contact name" />
+                      </div>
+                      <div>
+                        <Label htmlFor={`contact_phone_${index}`}>Phone</Label>
+                        <Input
+                          id={`contact_phone_${index}`}
+                          value={contact.contact_phone}
+                          onChange={(e) => updateContact(index, 'contact_phone', e.target.value)}
+                          placeholder="Phone number" />
+                      </div>
+                      <div>
+                        <Label htmlFor={`contact_email_${index}`}>Email</Label>
+                        <Input
+                          id={`contact_email_${index}`}
+                          type="email"
+                          value={contact.contact_email}
+                          onChange={(e) => updateContact(index, 'contact_email', e.target.value)}
+                          placeholder="Email address" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div>
@@ -373,8 +526,7 @@ const TenantManagement: React.FC = () => {
                 <Input
                   id="emergency_contact"
                   value={formData.emergency_contact}
-                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })} />
               </div>
 
               <div>
@@ -397,8 +549,7 @@ const TenantManagement: React.FC = () => {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                />
+                  rows={3} />
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -422,8 +573,7 @@ const TenantManagement: React.FC = () => {
             placeholder="Search tenants..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+            className="pl-10" />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full sm:w-40">
@@ -439,9 +589,9 @@ const TenantManagement: React.FC = () => {
       </div>
 
       {/* Tenant Cards */}
-      {loading ? (
+      {loading ?
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(6)].map((_, i) =>
             <Card key={i} className="animate-pulse">
               <CardHeader>
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
@@ -453,74 +603,86 @@ const TenantManagement: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : filteredTenants.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-8">
-            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No tenants found</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTenants.map((tenant) => (
-            <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    {tenant.title && `${tenant.title} `}{tenant.first_name} {tenant.last_name}
-                  </CardTitle>
-                  <Badge className={getStatusColor(tenant.status)}>
-                    {tenant.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Mail className="h-4 w-4" />
-                  <span>{tenant.email}</span>
-                </div>
-                {tenant.phone && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Phone className="h-4 w-4" />
-                    <span>{tenant.phone}</span>
+          )}
+        </div> :
+        filteredTenants.length === 0 ?
+          <Card>
+            <CardContent className="text-center py-8">
+              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No tenants found</p>
+            </CardContent>
+          </Card> :
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTenants.map((tenant) =>
+              <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {tenant.title && `${tenant.title} `}{tenant.tenant_name}
+                      {tenant.diplomatic && <Badge variant="secondary">Diplomatic</Badge>}
+                    </CardTitle>
+                    <Badge className={getStatusColor(tenant.status)}>
+                      {tenant.status}
+                    </Badge>
                   </div>
-                )}
-                {tenant.id_type && (
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <IdCard className="h-4 w-4" />
-                    <span>{tenant.id_type}</span>
+                    <Mail className="h-4 w-4" />
+                    <span>{tenant.email}</span>
                   </div>
-                )}
-                {tenant.address && (
-                  <p className="text-sm text-gray-600">{tenant.address}</p>
-                )}
-                {tenant.notes && (
-                  <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
-                )}
-                <div className="flex justify-end space-x-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(tenant)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(tenant)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                  {tenant.phone &&
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Phone className="h-4 w-4" />
+                      <span>{tenant.phone}</span>
+                    </div>
+                  }
+                  {tenant.id_number &&
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <IdCard className="h-4 w-4" />
+                      <span>{tenant.id_number}</span>
+                    </div>
+                  }
+                  {tenant.address &&
+                    <p className="text-sm text-gray-600">{tenant.address}</p>
+                  }
+                  
+                  {/* Display contacts */}
+                  {tenantContacts[tenant.id] && tenantContacts[tenant.id].length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      <div className="font-medium mb-1">Contacts:</div>
+                      {tenantContacts[tenant.id].map((contact, index) => (
+                        <div key={index} className="text-xs ml-2">
+                          {contact.contact_name} - {contact.contact_phone}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {tenant.notes &&
+                    <p className="text-sm text-gray-500 italic">{tenant.notes}</p>
+                  }
+                  <div className="flex justify-end space-x-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(tenant)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(tenant)}
+                      className="text-red-600 hover:text-red-700">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+      }
     </div>
   );
 };

@@ -43,6 +43,7 @@ const PropertyManagement: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
+    residence: '',
     property_type: 'apartment',
     bedrooms: 1,
     bathrooms: 1,
@@ -59,33 +60,33 @@ const PropertyManagement: React.FC = () => {
   });
 
   const collectiveServiceOptions = [
-    'Air-conditioned rooms and living rooms',
-    'Equipped kitchens',
-    'Gym',
-    'Generator',
-    'Water tank',
-    'Elevator and freight elevator',
-    'Parking on the ground floor and basement',
-    'Swimming pool',
-    'On-site syndic',
-    'Video surveillance',
-    'Concierge service',
-    'Continuous cleaning service',
-    'Security',
-    'Fiber optics'
-  ];
+  'Air-conditioned rooms and living rooms',
+  'Equipped kitchens',
+  'Gym',
+  'Generator',
+  'Water tank',
+  'Elevator and freight elevator',
+  'Parking on the ground floor and basement',
+  'Swimming pool',
+  'On-site syndic',
+  'Video surveillance',
+  'Concierge service',
+  'Continuous cleaning service',
+  'Security',
+  'Fiber optics'];
+
 
   const getServiceIcon = (service: string) => {
     switch (service) {
-      case 'Gym': return <Dumbbell className="h-4 w-4" />;
-      case 'Swimming pool': return <Waves className="h-4 w-4" />;
-      case 'Parking on the ground floor and basement': return <Car className="h-4 w-4" />;
-      case 'Fiber optics': return <Wifi className="h-4 w-4" />;
-      case 'Security': return <Shield className="h-4 w-4" />;
-      case 'Concierge service': return <Users className="h-4 w-4" />;
-      case 'Video surveillance': return <Shield className="h-4 w-4" />;
-      case 'Elevator and freight elevator': return <Building className="h-4 w-4" />;
-      default: return <Settings className="h-4 w-4" />;
+      case 'Gym':return <Dumbbell className="h-4 w-4" />;
+      case 'Swimming pool':return <Waves className="h-4 w-4" />;
+      case 'Parking on the ground floor and basement':return <Car className="h-4 w-4" />;
+      case 'Fiber optics':return <Wifi className="h-4 w-4" />;
+      case 'Security':return <Shield className="h-4 w-4" />;
+      case 'Concierge service':return <Users className="h-4 w-4" />;
+      case 'Video surveillance':return <Shield className="h-4 w-4" />;
+      case 'Elevator and freight elevator':return <Building className="h-4 w-4" />;
+      default:return <Settings className="h-4 w-4" />;
     }
   };
 
@@ -218,6 +219,7 @@ const PropertyManagement: React.FC = () => {
     setFormData({
       name: '',
       address: '',
+      residence: '',
       property_type: 'apartment',
       bedrooms: 1,
       bathrooms: 1,
@@ -245,6 +247,7 @@ const PropertyManagement: React.FC = () => {
     setFormData({
       name: property.name,
       address: property.address,
+      residence: property.residence || '',
       property_type: property.property_type,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
@@ -294,19 +297,19 @@ const PropertyManagement: React.FC = () => {
   };
 
   const handleServiceToggle = (service: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      collective_services: prev.collective_services.includes(service)
-        ? prev.collective_services.filter(s => s !== service)
-        : [...prev.collective_services, service]
+      collective_services: prev.collective_services.includes(service) ?
+      prev.collective_services.filter((s) => s !== service) :
+      [...prev.collective_services, service]
     }));
   };
 
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
-      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.property_type.toLowerCase().includes(searchTerm.toLowerCase());
+    property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.property_type.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === 'all' || property.status === filterStatus;
 
@@ -315,10 +318,10 @@ const PropertyManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-100 text-green-800';
-      case 'occupied': return 'bg-blue-100 text-blue-800';
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'available':return 'bg-green-100 text-green-800';
+      case 'occupied':return 'bg-blue-100 text-blue-800';
+      case 'maintenance':return 'bg-yellow-100 text-yellow-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -358,8 +361,8 @@ const PropertyManagement: React.FC = () => {
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
+                    required />
+
                 </div>
                 <div>
                   <Label htmlFor="website">Website</Label>
@@ -368,8 +371,8 @@ const PropertyManagement: React.FC = () => {
                     type="url"
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    placeholder="https://..."
-                  />
+                    placeholder="https://..." />
+
                 </div>
               </div>
 
@@ -379,8 +382,18 @@ const PropertyManagement: React.FC = () => {
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  required
-                />
+                  required />
+
+              </div>
+
+              <div>
+                <Label htmlFor="residence">Residence</Label>
+                <Input
+                  id="residence"
+                  value={formData.residence}
+                  onChange={(e) => setFormData({ ...formData, residence: e.target.value })}
+                  placeholder="e.g., Residential Complex, Building Name" />
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -405,8 +418,8 @@ const PropertyManagement: React.FC = () => {
                     id="floor"
                     value={formData.floor}
                     onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                    placeholder="e.g., 2nd Floor, Ground Floor"
-                  />
+                    placeholder="e.g., 2nd Floor, Ground Floor" />
+
                 </div>
                 <div>
                   <Label htmlFor="nature">Nature</Label>
@@ -443,8 +456,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.square_feet}
-                    onChange={(e) => setFormData({ ...formData, square_feet: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, square_feet: parseInt(e.target.value) || 0 })} />
+
                 </div>
               </div>
 
@@ -456,8 +469,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.bedrooms}
-                    onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 0 })} />
+
                 </div>
                 <div>
                   <Label htmlFor="bathrooms">Bathrooms</Label>
@@ -466,8 +479,8 @@ const PropertyManagement: React.FC = () => {
                     type="number"
                     min="0"
                     value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 0 })} />
+
                 </div>
                 <div>
                   <Label htmlFor="monthly_rent">Monthly Rent ($)</Label>
@@ -477,8 +490,8 @@ const PropertyManagement: React.FC = () => {
                     min="0"
                     step="0.01"
                     value={formData.monthly_rent}
-                    onChange={(e) => setFormData({ ...formData, monthly_rent: parseFloat(e.target.value) || 0 })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, monthly_rent: parseFloat(e.target.value) || 0 })} />
+
                 </div>
               </div>
 
@@ -490,25 +503,25 @@ const PropertyManagement: React.FC = () => {
                   min="0"
                   step="0.01"
                   value={formData.security_deposit}
-                  onChange={(e) => setFormData({ ...formData, security_deposit: parseFloat(e.target.value) || 0 })}
-                />
+                  onChange={(e) => setFormData({ ...formData, security_deposit: parseFloat(e.target.value) || 0 })} />
+
               </div>
 
               <div>
                 <Label>Collective Services</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto border rounded p-3">
-                  {collectiveServiceOptions.map((service) => (
-                    <div key={service} className="flex items-center space-x-2">
+                  {collectiveServiceOptions.map((service) =>
+                  <div key={service} className="flex items-center space-x-2">
                       <Checkbox
-                        id={service}
-                        checked={formData.collective_services.includes(service)}
-                        onCheckedChange={() => handleServiceToggle(service)}
-                      />
+                      id={service}
+                      checked={formData.collective_services.includes(service)}
+                      onCheckedChange={() => handleServiceToggle(service)} />
+
                       <Label htmlFor={service} className="text-sm">
                         {service}
                       </Label>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -518,8 +531,8 @@ const PropertyManagement: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -543,8 +556,8 @@ const PropertyManagement: React.FC = () => {
             placeholder="Search properties..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+            className="pl-10" />
+
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full sm:w-40">
@@ -560,10 +573,10 @@ const PropertyManagement: React.FC = () => {
       </div>
 
       {/* Property Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+      {loading ?
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) =>
+        <Card key={i} className="animate-pulse">
               <CardHeader>
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
               </CardHeader>
@@ -574,21 +587,21 @@ const PropertyManagement: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : filteredProperties.length === 0 ? (
-        <Card>
+        )}
+        </div> :
+      filteredProperties.length === 0 ?
+      <Card>
           <CardContent className="text-center py-8">
             <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No properties found</p>
           </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </Card> :
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => {
-            const services = getPropertyServices(property.collective_services);
-            return (
-              <Card key={property.id} className="hover:shadow-lg transition-shadow">
+          const services = getPropertyServices(property.collective_services);
+          return (
+            <Card key={property.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{property.name}</CardTitle>
@@ -608,20 +621,20 @@ const PropertyManagement: React.FC = () => {
                     {property.floor && <span>Floor: {property.floor}</span>}
                   </div>
 
-                  {property.website && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  {property.website &&
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Globe className="h-4 w-4" />
                       <a href={property.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                         Website
                       </a>
                     </div>
-                  )}
+                }
 
-                  {property.nature && (
-                    <div className="text-sm text-gray-600">
+                  {property.nature &&
+                <div className="text-sm text-gray-600">
                       <span className="font-medium">Nature:</span> {property.nature}
                     </div>
-                  )}
+                }
 
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
@@ -632,9 +645,9 @@ const PropertyManagement: React.FC = () => {
                       <Bath className="h-4 w-4" />
                       <span>{property.bathrooms} bath</span>
                     </div>
-                    {property.square_feet > 0 && (
-                      <span>{property.square_feet} sqft</span>
-                    )}
+                    {property.square_feet > 0 &&
+                  <span>{property.square_feet} sqft</span>
+                  }
                   </div>
 
                   <div className="flex items-center space-x-2 text-sm font-semibold text-gray-900">
@@ -642,54 +655,54 @@ const PropertyManagement: React.FC = () => {
                     <span>${property.monthly_rent.toLocaleString()}/month</span>
                   </div>
 
-                  {services.length > 0 && (
-                    <div className="space-y-1">
+                  {services.length > 0 &&
+                <div className="space-y-1">
                       <div className="text-sm font-medium text-gray-700">Services:</div>
                       <div className="flex flex-wrap gap-1">
-                        {services.slice(0, 3).map((service: string) => (
-                          <div key={service} className="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded text-xs">
+                        {services.slice(0, 3).map((service: string) =>
+                    <div key={service} className="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded text-xs">
                             {getServiceIcon(service)}
                             <span>{service}</span>
                           </div>
-                        ))}
-                        {services.length > 3 && (
-                          <div className="bg-gray-100 px-2 py-1 rounded text-xs">
+                    )}
+                        {services.length > 3 &&
+                    <div className="bg-gray-100 px-2 py-1 rounded text-xs">
                             +{services.length - 3} more
                           </div>
-                        )}
+                    }
                       </div>
                     </div>
-                  )}
+                }
 
-                  {property.description && (
-                    <p className="text-sm text-gray-500 line-clamp-2">{property.description}</p>
-                  )}
+                  {property.description &&
+                <p className="text-sm text-gray-500 line-clamp-2">{property.description}</p>
+                }
 
                   <div className="flex justify-end space-x-2 pt-2">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(property)}
-                    >
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(property)}>
+
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(property)}
-                      className="text-red-600 hover:text-red-700"
-                    >
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(property)}
+                    className="text-red-600 hover:text-red-700">
+
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
-            );
-          })}
+              </Card>);
+
+        })}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default PropertyManagement;

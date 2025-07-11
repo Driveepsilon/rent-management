@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { numberToWords } from '@/utils/numberToWords';
 
 interface Invoice {
   id: number;
@@ -21,12 +23,15 @@ interface Invoice {
   description: string;
   status: string;
   late_fee: number;
+  rent_period: string;
+  rent_months: number;
+  bank_information: string;
+  amount_in_letters: string;
 }
 
 interface Tenant {
   id: number;
-  first_name: string;
-  last_name: string;
+  tenant_name: string;
   email: string;
 }
 
@@ -54,7 +59,10 @@ const InvoiceManagement: React.FC = () => {
     due_date: '',
     amount: '',
     description: '',
-    late_fee: '0'
+    late_fee: '0',
+    rent_period: '',
+    rent_months: '1',
+    bank_information: ''
   });
 
   useEffect(() => {
@@ -65,21 +73,31 @@ const InvoiceManagement: React.FC = () => {
 
   const fetchInvoices = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26867, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to view invoices.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { data, error } = await window.ezsite.apis.tablePage('26867', {
         PageNo: 1,
         PageSize: 50,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: []
+        Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }]
       });
       if (error) throw error;
       setInvoices(data.List || []);
     } catch (error) {
       console.error('Error fetching invoices:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch invoices",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch invoices',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -88,12 +106,18 @@ const InvoiceManagement: React.FC = () => {
 
   const fetchTenants = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26864, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26864', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: [{ name: "status", op: "Equal", value: "active" }]
+        Filters: [
+          { name: 'user_id', op: 'Equal', value: userData.ID },
+          { name: 'status', op: 'Equal', value: 'active' }
+        ]
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -104,12 +128,15 @@ const InvoiceManagement: React.FC = () => {
 
   const fetchProperties = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.tablePage(26865, {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) return;
+
+      const { data, error } = await window.ezsite.apis.tablePage('26865', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: "id",
+        OrderByField: 'id',
         IsAsc: false,
-        Filters: []
+        Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }]
       });
       if (error) throw error;
       setProperties(data.List || []);
@@ -120,24 +147,42 @@ const InvoiceManagement: React.FC = () => {
 
   const handleCreateInvoice = async () => {
     try {
+      const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
+      if (userError) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to continue.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const invoiceNumber = `INV-${Date.now()}`;
-      const { error } = await window.ezsite.apis.tableCreate(26867, {
+      const amount = parseFloat(formData.amount);
+      const amountInLetters = numberToWords(amount);
+      
+      const { error } = await window.ezsite.apis.tableCreate('26867', {
         tenant_id: parseInt(formData.tenant_id),
         property_id: parseInt(formData.property_id),
         invoice_number: invoiceNumber,
         invoice_date: new Date(formData.invoice_date).toISOString(),
         due_date: new Date(formData.due_date).toISOString(),
-        amount: parseFloat(formData.amount),
+        amount: amount,
         description: formData.description,
         late_fee: parseFloat(formData.late_fee),
-        status: 'pending'
+        rent_period: formData.rent_period,
+        rent_months: parseInt(formData.rent_months),
+        bank_information: formData.bank_information,
+        amount_in_letters: amountInLetters,
+        status: 'pending',
+        user_id: userData.ID
       });
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Invoice created successfully"
+        title: 'Success',
+        description: 'Invoice created successfully'
       });
 
       setIsCreateDialogOpen(false);
@@ -148,22 +193,25 @@ const InvoiceManagement: React.FC = () => {
         due_date: '',
         amount: '',
         description: '',
-        late_fee: '0'
+        late_fee: '0',
+        rent_period: '',
+        rent_months: '1',
+        bank_information: ''
       });
       fetchInvoices();
     } catch (error) {
       console.error('Error creating invoice:', error);
       toast({
-        title: "Error",
-        description: "Failed to create invoice",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to create invoice',
+        variant: 'destructive'
       });
     }
   };
 
   const handleStatusUpdate = async (invoice: Invoice, newStatus: string) => {
     try {
-      const { error } = await window.ezsite.apis.tableUpdate(26867, {
+      const { error } = await window.ezsite.apis.tableUpdate('26867', {
         ID: invoice.id,
         ...invoice,
         status: newStatus
@@ -172,24 +220,24 @@ const InvoiceManagement: React.FC = () => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Invoice status updated successfully"
+        title: 'Success',
+        description: 'Invoice status updated successfully'
       });
 
       fetchInvoices();
     } catch (error) {
       console.error('Error updating invoice status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update invoice status",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to update invoice status',
+        variant: 'destructive'
       });
     }
   };
 
   const getTenantName = (tenantId: number) => {
     const tenant = tenants.find((t) => t.id === tenantId);
-    return tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown';
+    return tenant ? tenant.tenant_name : 'Unknown';
   };
 
   const getPropertyName = (propertyId: number) => {
@@ -199,10 +247,10 @@ const InvoiceManagement: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid':return 'bg-green-100 text-green-800';
-      case 'pending':return 'bg-yellow-100 text-yellow-800';
-      case 'overdue':return 'bg-red-100 text-red-800';
-      default:return 'bg-gray-100 text-gray-800';
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -218,18 +266,25 @@ const InvoiceManagement: React.FC = () => {
       Due Date: ${new Date(invoice.due_date).toLocaleDateString()}
       
       Bill To:
-      ${tenant ? `${tenant.first_name} ${tenant.last_name}` : 'Unknown Tenant'}
+      ${tenant ? tenant.tenant_name : 'Unknown Tenant'}
       ${tenant ? tenant.email : ''}
       
       Property:
       ${property ? property.name : 'Unknown Property'}
       ${property ? property.address : ''}
       
+      Rent Period: ${invoice.rent_period}
+      Number of Rent Months: ${invoice.rent_months}
+      
       Description: ${invoice.description}
       Amount: $${invoice.amount.toFixed(2)}
       Late Fee: $${invoice.late_fee.toFixed(2)}
       
       Total: $${(invoice.amount + invoice.late_fee).toFixed(2)}
+      Amount in Letters: ${invoice.amount_in_letters}
+      
+      Bank Information:
+      ${invoice.bank_information}
       
       Status: ${invoice.status.toUpperCase()}
     `;
@@ -241,6 +296,15 @@ const InvoiceManagement: React.FC = () => {
     a.download = `invoice-${invoice.invoice_number}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleAmountChange = (value: string) => {
+    setFormData({ ...formData, amount: value });
+  };
+
+  const getCurrentAmountInWords = () => {
+    const amount = parseFloat(formData.amount);
+    return isNaN(amount) ? '' : numberToWords(amount);
   };
 
   if (loading) {
@@ -261,7 +325,7 @@ const InvoiceManagement: React.FC = () => {
               Create Invoice
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Invoice</DialogTitle>
             </DialogHeader>
@@ -275,8 +339,8 @@ const InvoiceManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {tenants.map((tenant) =>
-                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
-                          {tenant.first_name} {tenant.last_name}
+                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                          {tenant.tenant_name}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -290,7 +354,7 @@ const InvoiceManagement: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {properties.map((property) =>
-                      <SelectItem key={property.id} value={property.id.toString()}>
+                        <SelectItem key={property.id} value={property.id.toString()}>
                           {property.name}
                         </SelectItem>
                       )}
@@ -306,7 +370,6 @@ const InvoiceManagement: React.FC = () => {
                     type="date"
                     value={formData.invoice_date}
                     onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })} />
-
                 </div>
                 <div>
                   <Label htmlFor="due_date">Due Date</Label>
@@ -315,7 +378,25 @@ const InvoiceManagement: React.FC = () => {
                     type="date"
                     value={formData.due_date}
                     onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} />
-
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="rent_period">Rent Period</Label>
+                  <Input
+                    id="rent_period"
+                    value={formData.rent_period}
+                    onChange={(e) => setFormData({ ...formData, rent_period: e.target.value })}
+                    placeholder="e.g., January 2024" />
+                </div>
+                <div>
+                  <Label htmlFor="rent_months">Number of Rent Months</Label>
+                  <Input
+                    id="rent_months"
+                    type="number"
+                    min="1"
+                    value={formData.rent_months}
+                    onChange={(e) => setFormData({ ...formData, rent_months: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -326,8 +407,12 @@ const InvoiceManagement: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
-
+                    onChange={(e) => handleAmountChange(e.target.value)} />
+                  {formData.amount && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      In words: {getCurrentAmountInWords()}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="late_fee">Late Fee</Label>
@@ -337,8 +422,16 @@ const InvoiceManagement: React.FC = () => {
                     step="0.01"
                     value={formData.late_fee}
                     onChange={(e) => setFormData({ ...formData, late_fee: e.target.value })} />
-
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="bank_information">Bank Information</Label>
+                <Textarea
+                  id="bank_information"
+                  value={formData.bank_information}
+                  onChange={(e) => setFormData({ ...formData, bank_information: e.target.value })}
+                  placeholder="Bank name, account number, routing number, etc."
+                  rows={3} />
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
@@ -347,7 +440,6 @@ const InvoiceManagement: React.FC = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter invoice description" />
-
               </div>
               <Button onClick={handleCreateInvoice} className="w-full">
                 Create Invoice
@@ -359,7 +451,7 @@ const InvoiceManagement: React.FC = () => {
 
       <div className="grid gap-4">
         {invoices.map((invoice) =>
-        <Card key={invoice.id}>
+          <Card key={invoice.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -373,39 +465,39 @@ const InvoiceManagement: React.FC = () => {
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Tenant:</strong> {getTenantName(invoice.tenant_id)}</p>
                     <p><strong>Property:</strong> {getPropertyName(invoice.property_id)}</p>
+                    <p><strong>Rent Period:</strong> {invoice.rent_period}</p>
+                    <p><strong>Rent Months:</strong> {invoice.rent_months}</p>
                     <p><strong>Amount:</strong> ${invoice.amount.toFixed(2)}</p>
+                    <p><strong>Amount in Letters:</strong> {invoice.amount_in_letters}</p>
                     <p><strong>Due Date:</strong> {new Date(invoice.due_date).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedInvoice(invoice);
-                    setIsViewDialogOpen(true);
-                  }}>
-
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedInvoice(invoice);
+                      setIsViewDialogOpen(true);
+                    }}>
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
                   <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => generateInvoicePDF(invoice)}>
-
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateInvoicePDF(invoice)}>
                     <FileText className="h-4 w-4 mr-1" />
                     Download
                   </Button>
                   {invoice.status === 'pending' &&
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleStatusUpdate(invoice, 'paid')}>
-
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusUpdate(invoice, 'paid')}>
                       Mark Paid
                     </Button>
-                }
+                  }
                 </div>
               </div>
             </CardContent>
@@ -414,8 +506,8 @@ const InvoiceManagement: React.FC = () => {
       </div>
 
       {selectedInvoice &&
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-2xl">
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Invoice Details</DialogTitle>
             </DialogHeader>
@@ -454,12 +546,32 @@ const InvoiceManagement: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <Label>Rent Period</Label>
+                  <p>{selectedInvoice.rent_period}</p>
+                </div>
+                <div>
+                  <Label>Number of Rent Months</Label>
+                  <p>{selectedInvoice.rent_months}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Amount</Label>
                   <p className="text-lg font-semibold">${selectedInvoice.amount.toFixed(2)}</p>
                 </div>
                 <div>
                   <Label>Late Fee</Label>
                   <p className="text-lg font-semibold">${selectedInvoice.late_fee.toFixed(2)}</p>
+                </div>
+              </div>
+              <div>
+                <Label>Amount in Letters</Label>
+                <p className="text-sm bg-gray-50 p-2 rounded">{selectedInvoice.amount_in_letters}</p>
+              </div>
+              <div>
+                <Label>Bank Information</Label>
+                <div className="bg-gray-50 p-3 rounded">
+                  <pre className="text-sm whitespace-pre-wrap">{selectedInvoice.bank_information}</pre>
                 </div>
               </div>
               <div>
@@ -476,8 +588,22 @@ const InvoiceManagement: React.FC = () => {
           </DialogContent>
         </Dialog>
       }
-    </div>);
 
+      {invoices.length === 0 &&
+        <Card>
+          <CardContent className="p-12 text-center">
+            <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
+            <p className="text-gray-600 mb-4">Create your first invoice to get started</p>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create First Invoice
+            </Button>
+          </CardContent>
+        </Card>
+      }
+    </div>
+  );
 };
 
 export default InvoiceManagement;
