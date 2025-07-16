@@ -277,63 +277,298 @@ const PropertyReport: React.FC = () => {
     }
 
     // Find owner for the selected property
-    const propertyOwner = owners.find(owner => owner.property_id === parseInt(selectedProperty));
-    
+    const propertyOwner = owners.find((owner) => owner.property_id === parseInt(selectedProperty));
+
     setEmailData({
       recipientEmail: propertyOwner?.email || '',
       customMessage: ''
     });
-    
+
     setEmailDialog(true);
   };
 
   const generateEmailContent = () => {
-    const selectedPropertyData = properties.find(p => p.id === parseInt(selectedProperty));
-    const propertyOwner = owners.find(owner => owner.property_id === parseInt(selectedProperty));
+    const selectedPropertyData = properties.find((p) => p.id === parseInt(selectedProperty));
+    const propertyOwner = owners.find((owner) => owner.property_id === parseInt(selectedProperty));
 
     const subject = `Property Financial Report - ${selectedPropertyData?.name || 'Property'} (${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()})`;
 
-    let emailBody = `Dear ${propertyOwner?.owner_name || 'Property Owner'},\n\n`;
-    
-    if (emailData.customMessage) {
-      emailBody += `${emailData.customMessage}\n\n`;
-    }
-    
-    emailBody += `Please find below the financial report for your property:\n\n`;
-    emailBody += `Property: ${selectedPropertyData?.name || 'N/A'}\n`;
-    emailBody += `Address: ${selectedPropertyData?.address || 'N/A'}\n`;
-    emailBody += `Report Period: ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}\n`;
-    
-    if (description) {
-      emailBody += `Description: ${description}\n`;
-    }
-    
-    emailBody += `\n--- FINANCIAL SUMMARY ---\n`;
-    emailBody += `Total Income: $${totals.totalIncome.toLocaleString()}\n`;
-    emailBody += `Total Expenses: $${totals.totalExpenses.toLocaleString()}\n`;
-    emailBody += `Net Balance: $${totals.netBalance.toLocaleString()}\n\n`;
-    
-    emailBody += `--- DETAILED TRANSACTIONS ---\n`;
-    emailBody += `Date       | Type     | Description                    | Category           | Amount     | Balance\n`;
-    emailBody += `-----------|----------|--------------------------------|--------------------|-----------|-----------\n`;
-    
-    reportData.forEach(transaction => {
-      const date = new Date(transaction.date).toLocaleDateString().padEnd(10);
-      const type = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-      const typeFormatted = type.padEnd(8);
-      const desc = transaction.description.substring(0, 30).padEnd(30);
-      const category = (transaction.category || '-').padEnd(18);
-      const amount = (transaction.type === 'income' ? '+' : '-') + '$' + transaction.amount.toLocaleString();
-      const amountFormatted = amount.padEnd(10);
-      const balance = '$' + transaction.balance.toLocaleString();
-      
-      emailBody += `${date} | ${typeFormatted} | ${desc} | ${category} | ${amountFormatted} | ${balance}\n`;
-    });
-    
-    emailBody += `\n\nThis report was generated automatically by the Property Management System.\n\n`;
-    emailBody += `Best regards,\nProperty Management Team`;
+    // Generate HTML email body
+    const htmlBody = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Financial Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #4f46e5;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .property-info {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #4f46e5;
+        }
+        .property-info h2 {
+            color: #4f46e5;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #374151;
+        }
+        .info-value {
+            color: #6b7280;
+        }
+        .custom-message {
+            background-color: #ecfdf5;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin-bottom: 25px;
+        }
+        .financial-summary {
+            margin-bottom: 30px;
+        }
+        .financial-summary h2 {
+            color: #374151;
+            margin-bottom: 20px;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .summary-card {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #6b7280;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .summary-card .amount {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .income { color: #10b981; }
+        .expense { color: #ef4444; }
+        .balance.positive { color: #10b981; }
+        .balance.negative { color: #ef4444; }
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: white;
+        }
+        .transactions-table th {
+            background-color: #4f46e5;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #4f46e5;
+        }
+        .transactions-table td {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        .transactions-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .transactions-table tr:hover {
+            background-color: #f1f5f9;
+        }
+        .transaction-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .transaction-income {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .transaction-expense {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        .amount-cell {
+            text-align: right;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+        .footer .signature {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        @media (max-width: 600px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .transactions-table {
+                font-size: 12px;
+            }
+            .transactions-table th,
+            .transactions-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Property Financial Report</h1>
+            <div class="subtitle">Financial Analysis & Performance Summary</div>
+        </div>
 
-    return { subject, body: emailBody };
+        <div class="property-info">
+            <h2>Property & Report Details</h2>
+            <div class="info-grid">
+                <span class="info-label">Property Owner:</span>
+                <span class="info-value">${propertyOwner?.owner_name || 'Property Owner'}</span>
+                <span class="info-label">Property Name:</span>
+                <span class="info-value">${selectedPropertyData?.name || 'N/A'}</span>
+                <span class="info-label">Property Address:</span>
+                <span class="info-value">${selectedPropertyData?.address || 'N/A'}</span>
+                <span class="info-label">Report Period:</span>
+                <span class="info-value">${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}</span>
+                ${description ? `<span class="info-label">Description:</span><span class="info-value">${description}</span>` : ''}
+            </div>
+        </div>
+
+        ${emailData.customMessage ? `
+        <div class="custom-message">
+            <strong>Message:</strong><br>
+            ${emailData.customMessage.replace(/\n/g, '<br>')}
+        </div>` : ''}
+
+        <div class="financial-summary">
+            <h2>Financial Summary</h2>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total Income</h3>
+                    <p class="amount income">$${totals.totalIncome.toLocaleString()}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Expenses</h3>
+                    <p class="amount expense">$${totals.totalExpenses.toLocaleString()}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Net Balance</h3>
+                    <p class="amount balance ${totals.netBalance >= 0 ? 'positive' : 'negative'}">
+                        $${totals.netBalance.toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2>Detailed Transactions</h2>
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${reportData.map((transaction) => `
+                    <tr>
+                        <td>${new Date(transaction.date).toLocaleDateString()}</td>
+                        <td>
+                            <span class="transaction-type transaction-${transaction.type}">
+                                ${transaction.type === 'income' ? 'Income' : 'Expense'}
+                            </span>
+                        </td>
+                        <td>${transaction.description}</td>
+                        <td>${transaction.category || '-'}</td>
+                        <td class="amount-cell ${transaction.type === 'income' ? 'income' : 'expense'}">
+                            ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toLocaleString()}
+                        </td>
+                        <td class="amount-cell balance ${transaction.balance >= 0 ? 'positive' : 'negative'}">
+                            $${transaction.balance.toLocaleString()}
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>This report was generated automatically by the Property Management System.</p>
+            <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+            <div class="signature">
+                Best regards,<br>
+                Property Management Team
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+
+    return { subject, body: htmlBody };
   };
 
   const sendEmailReport = async () => {
@@ -365,7 +600,7 @@ const PropertyReport: React.FC = () => {
         from: 'Property Management <noreply@propertymanagement.com>',
         to: [emailData.recipientEmail],
         subject: subject,
-        text: body
+        html: body
       });
 
       if (error) throw error;
@@ -392,7 +627,7 @@ const PropertyReport: React.FC = () => {
   };
 
   const selectedPropertyData = properties.find((p) => p.id === parseInt(selectedProperty));
-  const propertyOwner = owners.find(owner => owner.property_id === parseInt(selectedProperty));
+  const propertyOwner = owners.find((owner) => owner.property_id === parseInt(selectedProperty));
 
   return (
     <div className="space-y-6">
@@ -483,8 +718,8 @@ const PropertyReport: React.FC = () => {
       </Card>
 
       {/* Owner Information */}
-      {selectedProperty && propertyOwner && (
-        <Card>
+      {selectedProperty && propertyOwner &&
+      <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
@@ -508,7 +743,7 @@ const PropertyReport: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Report Summary */}
       {reportData.length > 0 &&
@@ -652,7 +887,7 @@ const PropertyReport: React.FC = () => {
                   id="recipient"
                   type="email"
                   value={emailData.recipientEmail}
-                  onChange={(e) => setEmailData({...emailData, recipientEmail: e.target.value})}
+                  onChange={(e) => setEmailData({ ...emailData, recipientEmail: e.target.value })}
                   placeholder="Enter recipient email" />
               </div>
               <div>
@@ -671,7 +906,7 @@ const PropertyReport: React.FC = () => {
               <Textarea
                 id="customMessage"
                 value={emailData.customMessage}
-                onChange={(e) => setEmailData({...emailData, customMessage: e.target.value})}
+                onChange={(e) => setEmailData({ ...emailData, customMessage: e.target.value })}
                 placeholder="Add a personal message that will appear at the top of the email..."
                 rows={3} />
             </div>
@@ -680,9 +915,11 @@ const PropertyReport: React.FC = () => {
             <div>
               <Label>Email Preview</Label>
               <div className="bg-gray-50 p-4 rounded-lg border max-h-96 overflow-y-auto">
-                <pre className="text-sm whitespace-pre-wrap font-mono">
-                  {generateEmailContent().body}
-                </pre>
+                <div 
+                  className="text-sm"
+                  dangerouslySetInnerHTML={{ __html: generateEmailContent().body }}
+                  style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%' }}
+                />
               </div>
             </div>
 
