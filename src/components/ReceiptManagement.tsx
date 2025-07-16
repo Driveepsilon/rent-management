@@ -49,7 +49,7 @@ const ReceiptManagement: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailSentStatuses, setEmailSentStatuses] = useState<{ [key: number]: boolean }>({});
+  const [emailSentStatuses, setEmailSentStatuses] = useState<{[key: number]: boolean;}>({});
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -80,7 +80,7 @@ const ReceiptManagement: React.FC = () => {
 
   const checkEmailStatuses = async () => {
     try {
-      const statuses: { [key: number]: boolean } = {};
+      const statuses: {[key: number]: boolean;} = {};
       for (const payment of payments) {
         const { data, error } = await window.ezsite.apis.tablePage('27120', {
           PageNo: 1,
@@ -88,10 +88,10 @@ const ReceiptManagement: React.FC = () => {
           OrderByField: 'id',
           IsAsc: false,
           Filters: [
-            { name: 'payment_id', op: 'Equal', value: payment.id },
-            { name: 'email_type', op: 'Equal', value: 'receipt' },
-            { name: 'status', op: 'Equal', value: 'sent' }
-          ]
+          { name: 'payment_id', op: 'Equal', value: payment.id },
+          { name: 'email_type', op: 'Equal', value: 'receipt' },
+          { name: 'status', op: 'Equal', value: 'sent' }]
+
         });
         if (!error && data.List && data.List.length > 0) {
           statuses[payment.id] = true;
@@ -561,11 +561,11 @@ const ReceiptManagement: React.FC = () => {
                     <Badge className={getStatusColor(payment.status)}>
                       {payment.status}
                     </Badge>
-                    {emailSentStatuses[payment.id] && (
-                      <Badge className="bg-blue-100 text-blue-800">
+                    {emailSentStatuses[payment.id] &&
+                  <Badge className="bg-blue-100 text-blue-800">
                         Email Sent
                       </Badge>
-                    )}
+                  }
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Tenant:</strong> {getTenantName(payment.tenant_id)}</p>
@@ -576,24 +576,24 @@ const ReceiptManagement: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {canEdit(payment) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(payment)}>
+                  {canEdit(payment) &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openEditDialog(payment)}>
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                  )}
-                  {canCancel(payment) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCancelPayment(payment)}>
+                }
+                  {canCancel(payment) &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCancelPayment(payment)}>
                       <X className="h-4 w-4 mr-1" />
                       Cancel
                     </Button>
-                  )}
+                }
                   <Button
                   variant="outline"
                   size="sm"

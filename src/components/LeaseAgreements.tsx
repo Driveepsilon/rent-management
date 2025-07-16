@@ -693,24 +693,24 @@ const LeaseAgreements: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {canEdit(lease) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(lease)}>
+                    {canEdit(lease) &&
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog(lease)}>
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
-                    )}
-                    {canCancel(lease) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCancelLease(lease)}>
+                    }
+                    {canCancel(lease) &&
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCancelLease(lease)}>
                         <X className="h-4 w-4 mr-1" />
                         Cancel
                       </Button>
-                    )}
+                    }
                     <Button
                       variant="outline"
                       size="sm"

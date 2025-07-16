@@ -54,7 +54,7 @@ const InvoiceManagement: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailSentStatuses, setEmailSentStatuses] = useState<{ [key: number]: boolean }>({});
+  const [emailSentStatuses, setEmailSentStatuses] = useState<{[key: number]: boolean;}>({});
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -84,7 +84,7 @@ const InvoiceManagement: React.FC = () => {
 
   const checkEmailStatuses = async () => {
     try {
-      const statuses: { [key: number]: boolean } = {};
+      const statuses: {[key: number]: boolean;} = {};
       for (const invoice of invoices) {
         const { data, error } = await window.ezsite.apis.tablePage('27120', {
           PageNo: 1,
@@ -92,10 +92,10 @@ const InvoiceManagement: React.FC = () => {
           OrderByField: 'id',
           IsAsc: false,
           Filters: [
-            { name: 'invoice_id', op: 'Equal', value: invoice.id },
-            { name: 'email_type', op: 'Equal', value: 'invoice' },
-            { name: 'status', op: 'Equal', value: 'sent' }
-          ]
+          { name: 'invoice_id', op: 'Equal', value: invoice.id },
+          { name: 'email_type', op: 'Equal', value: 'invoice' },
+          { name: 'status', op: 'Equal', value: 'sent' }]
+
         });
         if (!error && data.List && data.List.length > 0) {
           statuses[invoice.id] = true;
@@ -195,7 +195,9 @@ const InvoiceManagement: React.FC = () => {
 
       const invoiceNumber = `INV-${Date.now()}`;
       const amount = parseFloat(formData.amount);
-      const amountInLetters = numberToWords(amount);
+      // Fix: Calculate total as amount * 3
+      const totalAmount = amount * 3;
+      const amountInLetters = numberToWords(totalAmount);
 
       const { error } = await window.ezsite.apis.tableCreate('26867', {
         tenant_id: parseInt(formData.tenant_id),
@@ -203,7 +205,7 @@ const InvoiceManagement: React.FC = () => {
         invoice_number: invoiceNumber,
         invoice_date: new Date(formData.invoice_date).toISOString(),
         due_date: new Date(formData.due_date).toISOString(),
-        amount: amount,
+        amount: totalAmount, // Store the calculated total
         description: formData.description,
         late_fee: parseFloat(formData.late_fee),
         rent_period: formData.rent_period,
@@ -234,12 +236,15 @@ const InvoiceManagement: React.FC = () => {
     }
   };
 
+
   const handleEditInvoice = async () => {
     if (!selectedInvoice) return;
 
     try {
       const amount = parseFloat(formData.amount);
-      const amountInLetters = numberToWords(amount);
+      // Fix: Calculate total as amount * 3
+      const totalAmount = amount * 3;
+      const amountInLetters = numberToWords(totalAmount);
 
       const { error } = await window.ezsite.apis.tableUpdate('26867', {
         ID: selectedInvoice.id,
@@ -248,7 +253,7 @@ const InvoiceManagement: React.FC = () => {
         invoice_number: selectedInvoice.invoice_number,
         invoice_date: new Date(formData.invoice_date).toISOString(),
         due_date: new Date(formData.due_date).toISOString(),
-        amount: amount,
+        amount: totalAmount, // Store the calculated total
         description: formData.description,
         late_fee: parseFloat(formData.late_fee),
         rent_period: formData.rent_period,
@@ -278,6 +283,7 @@ const InvoiceManagement: React.FC = () => {
       });
     }
   };
+
 
   const handleCancelInvoice = async (invoice: Invoice) => {
     if (!confirm('Are you sure you want to cancel this invoice? This action cannot be undone.')) {
@@ -419,45 +425,21 @@ const InvoiceManagement: React.FC = () => {
     const tenant = tenants.find((t) => t.id === invoice.tenant_id);
     const property = properties.find((p) => p.id === invoice.property_id);
 
-    const invoiceContent = `
-      INVOICE
-      
-      Invoice Number: ${invoice.invoice_number}
-      Date: ${new Date(invoice.invoice_date).toLocaleDateString()}
-      Due Date: ${new Date(invoice.due_date).toLocaleDateString()}
-      
-      Bill To:
-      ${tenant ? tenant.tenant_name : 'Unknown Tenant'}
-      ${tenant ? tenant.email : ''}
-      
-      Property:
-      ${property ? property.name : 'Unknown Property'}
-      ${property ? property.address : ''}
-      
-      Rent Period: ${invoice.rent_period}
-      Number of Rent Months: ${invoice.rent_months}
-      
-      Description: ${invoice.description}
-      Amount: $${invoice.amount.toFixed(2)}
-      Late Fee: $${invoice.late_fee.toFixed(2)}
-      
-      Total: $${(invoice.amount + invoice.late_fee).toFixed(2)}
-      Amount in Letters: ${invoice.amount_in_letters}
-      
-      Bank Information:
-      ${invoice.bank_information}
-      
-      Status: ${invoice.status.toUpperCase()}
-    `;
+    if (!tenant || !property) {
+      toast({
+        title: 'Error',
+        description: 'Tenant or property not found',
+        variant: 'destructive'
+      });
+      return;
+    }
 
-    const blob = new Blob([invoiceContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `invoice-${invoice.invoice_number}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Use enhanced PDF generator
+    import('@/utils/enhancedPdfGenerator').then(({ enhancedPdfGenerator }) => {
+      enhancedPdfGenerator.downloadInvoice(invoice, tenant, property);
+    });
   };
+
 
   const handleAmountChange = (value: string) => {
     setFormData({ ...formData, amount: value });
@@ -630,11 +612,11 @@ const InvoiceManagement: React.FC = () => {
                     <Badge className={getStatusColor(invoice.status)}>
                       {invoice.status}
                     </Badge>
-                    {emailSentStatuses[invoice.id] && (
-                      <Badge className="bg-blue-100 text-blue-800">
+                    {emailSentStatuses[invoice.id] &&
+                  <Badge className="bg-blue-100 text-blue-800">
                         Email Sent
                       </Badge>
-                    )}
+                  }
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Tenant:</strong> {getTenantName(invoice.tenant_id)}</p>
@@ -647,24 +629,24 @@ const InvoiceManagement: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {canEdit(invoice) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(invoice)}>
+                  {canEdit(invoice) &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openEditDialog(invoice)}>
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                  )}
-                  {canCancel(invoice) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCancelInvoice(invoice)}>
+                }
+                  {canCancel(invoice) &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCancelInvoice(invoice)}>
                       <X className="h-4 w-4 mr-1" />
                       Cancel
                     </Button>
-                  )}
+                }
                   <Button
                   variant="outline"
                   size="sm"

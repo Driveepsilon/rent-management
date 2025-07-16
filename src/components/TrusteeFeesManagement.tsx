@@ -75,7 +75,7 @@ const TrusteeFeesManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'articles' | 'invoices'>('articles');
-  const [emailSentStatuses, setEmailSentStatuses] = useState<{ [key: number]: boolean }>({});
+  const [emailSentStatuses, setEmailSentStatuses] = useState<{[key: number]: boolean;}>({});
 
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -127,7 +127,7 @@ const TrusteeFeesManagement: React.FC = () => {
 
   const checkEmailStatuses = async () => {
     try {
-      const statuses: { [key: number]: boolean } = {};
+      const statuses: {[key: number]: boolean;} = {};
       for (const invoice of invoices) {
         const { data, error } = await window.ezsite.apis.tablePage('27120', {
           PageNo: 1,
@@ -135,10 +135,10 @@ const TrusteeFeesManagement: React.FC = () => {
           OrderByField: 'id',
           IsAsc: false,
           Filters: [
-            { name: 'invoice_id', op: 'Equal', value: invoice.id },
-            { name: 'email_type', op: 'Equal', value: 'trustee_fees' },
-            { name: 'status', op: 'Equal', value: 'sent' }
-          ]
+          { name: 'invoice_id', op: 'Equal', value: invoice.id },
+          { name: 'email_type', op: 'Equal', value: 'trustee_fees' },
+          { name: 'status', op: 'Equal', value: 'sent' }]
+
         });
         if (!error && data.List && data.List.length > 0) {
           statuses[invoice.id] = true;
@@ -892,11 +892,11 @@ const TrusteeFeesManagement: React.FC = () => {
                           <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
                             {invoice.status}
                           </Badge>
-                          {emailSentStatuses[invoice.id] && (
-                            <Badge className="bg-blue-100 text-blue-800">
+                          {emailSentStatuses[invoice.id] &&
+                        <Badge className="bg-blue-100 text-blue-800">
                               Email Sent
                             </Badge>
-                          )}
+                        }
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
                           {owner?.owner_name} - {property?.name}
@@ -916,24 +916,24 @@ const TrusteeFeesManagement: React.FC = () => {
 
                           <FileText className="h-4 w-4" />
                         </Button>
-                        {canEdit(invoice) && (
-                          <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editInvoice(invoice)}>
+                        {canEdit(invoice) &&
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editInvoice(invoice)}>
 
                             <Edit className="h-4 w-4" />
                           </Button>
-                        )}
-                        {canCancel(invoice) && (
-                          <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCancelInvoice(invoice)}>
+                      }
+                        {canCancel(invoice) &&
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelInvoice(invoice)}>
 
                             <X className="h-4 w-4" />
                           </Button>
-                        )}
+                      }
                         <Button
                         variant="outline"
                         size="sm"
@@ -976,10 +976,10 @@ const TrusteeFeesManagement: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {owners.map((owner) =>
-                  <SelectItem key={owner.id} value={owner.id.toString()}>
+                    <SelectItem key={owner.id} value={owner.id.toString()}>
                         {owner.owner_name}
                       </SelectItem>
-                  )}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -991,10 +991,10 @@ const TrusteeFeesManagement: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {properties.map((property) =>
-                  <SelectItem key={property.id} value={property.id.toString()}>
+                    <SelectItem key={property.id} value={property.id.toString()}>
                         {property.name}
                       </SelectItem>
-                  )}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -1003,10 +1003,10 @@ const TrusteeFeesManagement: React.FC = () => {
               <div>
                 <Label htmlFor="invoiceNumber">{t('invoices.invoiceNumber')}</Label>
                 <Input
-                id="invoiceNumber"
-                value={invoiceForm.invoice_number}
-                onChange={(e) => setInvoiceForm((prev) => ({ ...prev, invoice_number: e.target.value }))}
-                placeholder="TF-001" />
+                  id="invoiceNumber"
+                  value={invoiceForm.invoice_number}
+                  onChange={(e) => setInvoiceForm((prev) => ({ ...prev, invoice_number: e.target.value }))}
+                  placeholder="TF-001" />
               </div>
               <div>
                 <Label htmlFor="currency">{t('common.currency')}</Label>
@@ -1026,35 +1026,35 @@ const TrusteeFeesManagement: React.FC = () => {
               <div>
                 <Label htmlFor="invoiceDate">{t('invoices.invoiceDate')}</Label>
                 <Input
-                id="invoiceDate"
-                type="date"
-                value={invoiceForm.invoice_date}
-                onChange={(e) => setInvoiceForm((prev) => ({ ...prev, invoice_date: e.target.value }))} />
+                  id="invoiceDate"
+                  type="date"
+                  value={invoiceForm.invoice_date}
+                  onChange={(e) => setInvoiceForm((prev) => ({ ...prev, invoice_date: e.target.value }))} />
               </div>
               <div>
                 <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
                 <Input
-                id="dueDate"
-                type="date"
-                value={invoiceForm.due_date}
-                onChange={(e) => setInvoiceForm((prev) => ({ ...prev, due_date: e.target.value }))} />
+                  id="dueDate"
+                  type="date"
+                  value={invoiceForm.due_date}
+                  onChange={(e) => setInvoiceForm((prev) => ({ ...prev, due_date: e.target.value }))} />
               </div>
             </div>
             <div>
               <Label htmlFor="description">{t('common.description')}</Label>
               <Textarea
-              id="description"
-              value={invoiceForm.description}
-              onChange={(e) => setInvoiceForm((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Invoice description" />
+                id="description"
+                value={invoiceForm.description}
+                onChange={(e) => setInvoiceForm((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="Invoice description" />
             </div>
             <div>
               <Label htmlFor="notes">{t('tenants.notes')}</Label>
               <Textarea
-              id="notes"
-              value={invoiceForm.notes}
-              onChange={(e) => setInvoiceForm((prev) => ({ ...prev, notes: e.target.value }))}
-              placeholder="Additional notes" />
+                id="notes"
+                value={invoiceForm.notes}
+                onChange={(e) => setInvoiceForm((prev) => ({ ...prev, notes: e.target.value }))}
+                placeholder="Additional notes" />
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsEditInvoiceDialogOpen(false)}>
@@ -1140,6 +1140,8 @@ const TrusteeFeesManagement: React.FC = () => {
                   onClick={() => {
 
 
+
+
                     // Delete item logic can be added here
                   }}>
                     <Trash2 className="h-4 w-4" />
@@ -1159,8 +1161,6 @@ const TrusteeFeesManagement: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>);
-
-};
+    </div>);};
 
 export default TrusteeFeesManagement;
