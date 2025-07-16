@@ -39,9 +39,9 @@ const EmailServiceStatus: React.FC = () => {
 
       const logs = data.List || [];
       setEmailStats({
-        totalSent: logs.filter(log => log.status === 'sent').length,
-        totalFailed: logs.filter(log => log.status === 'failed').length,
-        totalPending: logs.filter(log => log.status === 'pending').length,
+        totalSent: logs.filter((log) => log.status === 'sent').length,
+        totalFailed: logs.filter((log) => log.status === 'failed').length,
+        totalPending: logs.filter((log) => log.status === 'pending').length,
         recentEmails: logs.slice(0, 5)
       });
     } catch (error) {
@@ -248,25 +248,25 @@ Property Management Team`,
                   type="email"
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}
-                  placeholder="Enter email address for testing"
-                />
+                  placeholder="Enter email address for testing" />
+
               </div>
               <div className="flex items-end">
-                <Button 
+                <Button
                   onClick={handleTestEmail}
-                  disabled={isTestingEmail || !testEmail}
-                >
-                  {isTestingEmail ? (
-                    <>
+                  disabled={isTestingEmail || !testEmail}>
+
+                  {isTestingEmail ?
+                  <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Sending...
-                    </>
-                  ) : (
-                    <>
+                    </> :
+
+                  <>
                       <Send className="mr-2 h-4 w-4" />
                       Send Test
                     </>
-                  )}
+                  }
                 </Button>
               </div>
             </div>
@@ -275,15 +275,15 @@ Property Management Team`,
       </Card>
 
       {/* Recent Email Activity */}
-      {emailStats.recentEmails.length > 0 && (
-        <Card>
+      {emailStats.recentEmails.length > 0 &&
+      <Card>
           <CardHeader>
             <CardTitle>Recent Email Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {emailStats.recentEmails.map((email: any) => (
-                <div key={email.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+              {emailStats.recentEmails.map((email: any) =>
+            <div key={email.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(email.status)}
                     <div>
@@ -300,13 +300,13 @@ Property Management Team`,
                     </span>
                   </div>
                 </div>
-              ))}
+            )}
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default EmailServiceStatus;

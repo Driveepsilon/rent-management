@@ -10,6 +10,7 @@ import InvoiceManagement from '@/components/InvoiceManagement';
 import ReceiptManagement from '@/components/ReceiptManagement';
 import LeaseAgreements from '@/components/LeaseAgreements';
 import EmailHistory from '@/components/EmailHistory';
+import ExpenseManagement from '@/components/ExpenseManagement';
 import LoginForm from '@/components/LoginForm';
 import RegisterForm from '@/components/RegisterForm';
 import NotFound from './pages/NotFound';
@@ -30,6 +31,7 @@ const App = () =>
           <Route path="/invoices" element={<Layout><InvoiceManagement /></Layout>} />
           <Route path="/receipts" element={<Layout><ReceiptManagement /></Layout>} />
           <Route path="/leases" element={<Layout><LeaseAgreements /></Layout>} />
+          <Route path="/expenses" element={<Layout><ExpenseManagement /></Layout>} />
           <Route path="/email-history" element={<Layout><EmailHistory /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -290,7 +290,7 @@ Property Management Team`;
   customMessage: string = '')
   : Promise<{success: boolean;error?: string;}> {
     let logId: number | null = null;
-    
+
     try {
       const { data: userData } = await window.ezsite.apis.getUserInfo();
       if (!userData) {
@@ -329,7 +329,7 @@ Property Management Team`;
             ...emailLog,
             status: result.success ? 'sent' : 'failed'
           };
-          
+
           await window.ezsite.apis.tableCreate('27120', finalLog);
         } catch (updateError) {
           console.error('Failed to update email log:', updateError);
@@ -390,7 +390,7 @@ Property Management Team`;
             ...emailLog,
             status: result.success ? 'sent' : 'failed'
           };
-          
+
           await window.ezsite.apis.tableCreate('27120', finalLog);
         } catch (updateError) {
           console.error('Failed to update email log:', updateError);

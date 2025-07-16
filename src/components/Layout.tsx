@@ -32,6 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   { href: '/leases', label: 'Lease Agreements', icon: FileCheck },
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/receipts', label: 'Receipts', icon: Receipt },
+  { href: '/expenses', label: 'Expenses', icon: CreditCard },
   { href: '/email-history', label: 'Email History', icon: Mail }];
 
 
