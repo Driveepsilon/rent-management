@@ -17,6 +17,25 @@ interface Invoice {
   rent_months: number;
   bank_information: string;
   amount_in_letters: string;
+  currency?: string;
+}
+
+interface TrusteeFeesInvoice {
+  id: number;
+  owner_id: number;
+  property_id: number;
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  total_amount: number;
+  currency: string;
+  description: string;
+  status: string;
+  notes: string;
+  created_date: string;
+  owner?: any;
+  property?: any;
+  items?: any[];
 }
 
 interface Payment {
@@ -29,6 +48,7 @@ interface Payment {
   reference_number: string;
   notes: string;
   status: string;
+  currency?: string;
 }
 
 interface Tenant {
@@ -66,11 +86,11 @@ export class PDFGenerator {
     doc.setFontSize(20);
     doc.setTextColor(79, 70, 229); // Indigo color
     doc.text(title, 20, 30);
-    
+
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, 40);
-    
+
     // Add a line under the header
     doc.setDrawColor(79, 70, 229);
     doc.line(20, 45, 190, 45);
@@ -83,47 +103,60 @@ export class PDFGenerator {
     doc.text('Property Management System - Confidential Document', 20, pageHeight - 20);
   }
 
-  generateInvoicePDF(invoice: Invoice, tenant: Tenant, property: Property): void {
+  private formatCurrency(amount: number, currency: string = 'USD'): string {
+    switch (currency) {
+      case 'USD':
+        return `$${amount.toFixed(2)}`;
+      case 'EUR':
+        return `€${amount.toFixed(2)}`;
+      case 'XOF':
+        return `${amount.toFixed(2)} CFA`;
+      default:
+        return `$${amount.toFixed(2)}`;
+    }
+  }
+
+  generateInvoicePDF(invoice: Invoice, tenant: Tenant, property: Property): Blob {
     const doc = new jsPDF();
-    
+
     this.addHeader(doc, 'INVOICE');
-    
+
     // Invoice details
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Invoice Number: ${invoice.invoice_number}`, 20, 60);
     doc.text(`Date: ${new Date(invoice.invoice_date).toLocaleDateString()}`, 20, 70);
     doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, 80);
-    
+
     // Bill to section
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
     doc.text('Bill To:', 20, 100);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(tenant.tenant_name, 20, 110);
     doc.text(tenant.email, 20, 120);
     if (tenant.phone) doc.text(tenant.phone, 20, 130);
     if (tenant.address) doc.text(tenant.address, 20, 140);
-    
+
     // Property details
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
     doc.text('Property:', 120, 100);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(property.name, 120, 110);
     doc.text(property.address, 120, 120);
-    
+
     // Invoice items table
     const tableData = [
-      ['Description', 'Period', 'Months', 'Amount'],
-      [invoice.description, invoice.rent_period, invoice.rent_months.toString(), `$${invoice.amount.toFixed(2)}`],
-      ['Late Fee', '', '', `$${invoice.late_fee.toFixed(2)}`]
-    ];
-    
+    ['Description', 'Period', 'Months', 'Amount'],
+    [invoice.description, invoice.rent_period, invoice.rent_months.toString(), this.formatCurrency(invoice.amount, invoice.currency)],
+    ['Late Fee', '', '', this.formatCurrency(invoice.late_fee, invoice.currency)]];
+
+
     autoTable(doc, {
       head: [tableData[0]],
       body: tableData.slice(1),
@@ -132,67 +165,157 @@ export class PDFGenerator {
       headStyles: { fillColor: [79, 70, 229] },
       margin: { left: 20 }
     });
-    
+
     // Total
     const finalY = (doc as any).lastAutoTable.finalY || 200;
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total: $${(invoice.amount + invoice.late_fee).toFixed(2)}`, 150, finalY + 20);
-    
+    doc.text(`Total: ${this.formatCurrency(invoice.amount + invoice.late_fee, invoice.currency)}`, 150, finalY + 20);
+
     // Amount in letters
     doc.setFontSize(10);
     doc.text(`Amount in Letters: ${invoice.amount_in_letters}`, 20, finalY + 40);
-    
+
     // Bank information
     if (invoice.bank_information) {
       doc.setFontSize(12);
       doc.setTextColor(79, 70, 229);
       doc.text('Bank Information:', 20, finalY + 60);
-      
+
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
       const bankLines = invoice.bank_information.split('\n');
       bankLines.forEach((line, index) => {
-        doc.text(line, 20, finalY + 70 + (index * 10));
+        doc.text(line, 20, finalY + 70 + index * 10);
       });
     }
-    
+
     this.addFooter(doc);
-    doc.save(`invoice-${invoice.invoice_number}.pdf`);
+    return doc.output('blob');
   }
 
-  generateReceiptPDF(payment: Payment, tenant: Tenant, invoice?: Invoice): void {
+  generateTrusteeFeesInvoicePDF(invoice: TrusteeFeesInvoice): Blob {
     const doc = new jsPDF();
-    
+
+    this.addHeader(doc, 'TRUSTEE FEES INVOICE');
+
+    // Invoice details
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Invoice Number: ${invoice.invoice_number}`, 20, 60);
+    doc.text(`Date: ${new Date(invoice.invoice_date).toLocaleDateString()}`, 20, 70);
+    doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, 80);
+
+    // Bill to section
+    doc.setFontSize(14);
+    doc.setTextColor(79, 70, 229);
+    doc.text('Bill To:', 20, 100);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(invoice.owner?.owner_name || 'Unknown Owner', 20, 110);
+    doc.text(invoice.owner?.email || '', 20, 120);
+    if (invoice.owner?.phone) doc.text(invoice.owner.phone, 20, 130);
+    if (invoice.owner?.address) doc.text(invoice.owner.address, 20, 140);
+
+    // Property details
+    doc.setFontSize(14);
+    doc.setTextColor(79, 70, 229);
+    doc.text('Property:', 120, 100);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(invoice.property?.name || 'Unknown Property', 120, 110);
+    doc.text(invoice.property?.address || '', 120, 120);
+
+    // Invoice items table
+    const tableData = [
+      ['Description', 'Quantity', 'Unit Price', 'Total']
+    ];
+
+    if (invoice.items && invoice.items.length > 0) {
+      invoice.items.forEach(item => {
+        tableData.push([
+          item.description,
+          item.quantity.toString(),
+          this.formatCurrency(item.unit_price, invoice.currency),
+          this.formatCurrency(item.total_amount, invoice.currency)
+        ]);
+      });
+    } else {
+      tableData.push([
+        invoice.description,
+        '1',
+        this.formatCurrency(invoice.total_amount, invoice.currency),
+        this.formatCurrency(invoice.total_amount, invoice.currency)
+      ]);
+    }
+
+    autoTable(doc, {
+      head: [tableData[0]],
+      body: tableData.slice(1),
+      startY: 160,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229] },
+      margin: { left: 20 }
+    });
+
+    // Total
+    const finalY = (doc as any).lastAutoTable.finalY || 200;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Total: ${this.formatCurrency(invoice.total_amount, invoice.currency)}`, 150, finalY + 20);
+
+    // Notes
+    if (invoice.notes) {
+      doc.setFontSize(12);
+      doc.setTextColor(79, 70, 229);
+      doc.text('Notes:', 20, finalY + 40);
+
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const noteLines = invoice.notes.split('\n');
+      noteLines.forEach((line, index) => {
+        doc.text(line, 20, finalY + 50 + index * 10);
+      });
+    }
+
+    this.addFooter(doc);
+    return doc.output('blob');
+  }
+
+  generateReceiptPDF(payment: Payment, tenant: Tenant, invoice?: Invoice): Blob {
+    const doc = new jsPDF();
+
     this.addHeader(doc, 'PAYMENT RECEIPT');
-    
+
     // Receipt details
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(`Receipt Number: RCP-${payment.id}`, 20, 60);
     doc.text(`Payment Date: ${new Date(payment.payment_date).toLocaleDateString()}`, 20, 70);
     doc.text(`Status: ${payment.status.toUpperCase()}`, 20, 80);
-    
+
     // Received from section
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
     doc.text('Received From:', 20, 100);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text(tenant.tenant_name, 20, 110);
     doc.text(tenant.email, 20, 120);
     if (tenant.phone) doc.text(tenant.phone, 20, 130);
-    
+
     // Payment details table
     const tableData = [
-      ['Description', 'Amount'],
-      ['Payment Amount', `$${payment.amount.toFixed(2)}`],
-      ['Payment Method', payment.payment_method],
-      ['Reference Number', payment.reference_number || 'N/A'],
-      ['Invoice Number', invoice?.invoice_number || 'N/A']
-    ];
-    
+    ['Description', 'Amount'],
+    ['Payment Amount', this.formatCurrency(payment.amount, payment.currency)],
+    ['Payment Method', payment.payment_method],
+    ['Reference Number', payment.reference_number || 'N/A'],
+    ['Invoice Number', invoice?.invoice_number || 'N/A']];
+
+
     autoTable(doc, {
       head: [tableData[0]],
       body: tableData.slice(1),
@@ -201,44 +324,45 @@ export class PDFGenerator {
       headStyles: { fillColor: [34, 197, 94] }, // Green color for receipts
       margin: { left: 20 }
     });
-    
+
     // Notes
     if (payment.notes) {
       const finalY = (doc as any).lastAutoTable.finalY || 200;
       doc.setFontSize(12);
       doc.setTextColor(79, 70, 229);
       doc.text('Notes:', 20, finalY + 20);
-      
+
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
       const noteLines = payment.notes.split('\n');
       noteLines.forEach((line, index) => {
-        doc.text(line, 20, finalY + 30 + (index * 10));
+        doc.text(line, 20, finalY + 30 + index * 10);
       });
     }
-    
+
     // Thank you message
     const finalY = (doc as any).lastAutoTable.finalY || 200;
     doc.setFontSize(12);
     doc.setTextColor(34, 197, 94);
     doc.text('Thank you for your payment!', 20, finalY + 60);
-    
+
     this.addFooter(doc);
-    doc.save(`receipt-${payment.id}.pdf`);
+    return doc.output('blob');
   }
 
   generateReportPDF(
-    reportData: TransactionItem[],
-    totals: ReportTotals,
-    property: Property,
-    startDate: string,
-    endDate: string,
-    description?: string
-  ): void {
+  reportData: TransactionItem[],
+  totals: ReportTotals,
+  property: Property,
+  startDate: string,
+  endDate: string,
+  description?: string,
+  currency: string = 'USD')
+  : Blob {
     const doc = new jsPDF();
-    
+
     this.addHeader(doc, 'PROPERTY FINANCIAL REPORT');
-    
+
     // Report details
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -246,19 +370,19 @@ export class PDFGenerator {
     doc.text(`Address: ${property.address}`, 20, 70);
     doc.text(`Period: ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`, 20, 80);
     if (description) doc.text(`Description: ${description}`, 20, 90);
-    
+
     // Summary section
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
     doc.text('Financial Summary', 20, 110);
-    
+
     const summaryData = [
-      ['Category', 'Amount'],
-      ['Total Income', `$${totals.totalIncome.toLocaleString()}`],
-      ['Total Expenses', `$${totals.totalExpenses.toLocaleString()}`],
-      ['Net Balance', `$${totals.netBalance.toLocaleString()}`]
-    ];
-    
+    ['Category', 'Amount'],
+    ['Total Income', this.formatCurrency(totals.totalIncome, currency)],
+    ['Total Expenses', this.formatCurrency(totals.totalExpenses, currency)],
+    ['Net Balance', this.formatCurrency(totals.netBalance, currency)]];
+
+
     autoTable(doc, {
       head: [summaryData[0]],
       body: summaryData.slice(1),
@@ -270,24 +394,24 @@ export class PDFGenerator {
         0: { fontStyle: 'bold' }
       }
     });
-    
+
     // Transactions table
     let finalY = (doc as any).lastAutoTable.finalY || 180;
     finalY += 20;
-    
+
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
     doc.text('Detailed Transactions', 20, finalY);
-    
-    const transactionData = reportData.map(transaction => [
-      new Date(transaction.date).toLocaleDateString(),
-      transaction.type === 'income' ? 'Income' : 'Expense',
-      transaction.description,
-      transaction.category || '-',
-      `${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toLocaleString()}`,
-      `$${transaction.balance.toLocaleString()}`
-    ]);
-    
+
+    const transactionData = reportData.map((transaction) => [
+    new Date(transaction.date).toLocaleDateString(),
+    transaction.type === 'income' ? 'Income' : 'Expense',
+    transaction.description,
+    transaction.category || '-',
+    `${transaction.type === 'income' ? '+' : '-'}${this.formatCurrency(transaction.amount, currency)}`,
+    this.formatCurrency(transaction.balance, currency)]
+    );
+
     autoTable(doc, {
       head: [['Date', 'Type', 'Description', 'Category', 'Amount', 'Balance']],
       body: transactionData,
@@ -297,20 +421,45 @@ export class PDFGenerator {
       margin: { left: 20 },
       styles: { fontSize: 8 },
       columnStyles: {
-        4: { 
+        4: {
           cellWidth: 25,
           halign: 'right'
         },
-        5: { 
+        5: {
           cellWidth: 25,
           halign: 'right'
         }
       }
     });
-    
+
     this.addFooter(doc);
-    doc.save(`property-report-${property.name.replace(/\s+/g, '-')}-${new Date(startDate).toISOString().split('T')[0]}-to-${new Date(endDate).toISOString().split('T')[0]}.pdf`);
+    return doc.output('blob');
   }
 }
 
 export const pdfGenerator = new PDFGenerator();
+
+// Export individual functions for convenience
+export const generateInvoicePDF = (data: any): Promise<Blob> => {
+  return Promise.resolve(pdfGenerator.generateInvoicePDF(data, data.tenant, data.property));
+};
+
+export const generateTrusteeFeesInvoicePDF = (data: any): Promise<Blob> => {
+  return Promise.resolve(pdfGenerator.generateTrusteeFeesInvoicePDF(data));
+};
+
+export const generateReceiptPDF = (data: any): Promise<Blob> => {
+  return Promise.resolve(pdfGenerator.generateReceiptPDF(data, data.tenant, data.invoice));
+};
+
+export const generateReportPDF = (data: any): Promise<Blob> => {
+  return Promise.resolve(pdfGenerator.generateReportPDF(
+    data.reportData,
+    data.totals,
+    data.property,
+    data.startDate,
+    data.endDate,
+    data.description,
+    data.currency
+  ));
+};

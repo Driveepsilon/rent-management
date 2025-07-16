@@ -119,9 +119,9 @@ const InvoiceManagementWithPDF: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -308,10 +308,10 @@ const InvoiceManagementWithPDF: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -356,7 +356,7 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {tenants.map((tenant) =>
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.tenant_name}
                         </SelectItem>
                       )}
@@ -371,7 +371,7 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {properties.map((property) =>
-                        <SelectItem key={property.id} value={property.id.toString()}>
+                      <SelectItem key={property.id} value={property.id.toString()}>
                           {property.name}
                         </SelectItem>
                       )}
@@ -386,8 +386,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     id="invoice_date"
                     type="date"
                     value={formData.invoice_date}
-                    onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })} />
+
                 </div>
                 <div>
                   <Label htmlFor="due_date">Due Date</Label>
@@ -395,8 +395,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     id="due_date"
                     type="date"
                     value={formData.due_date}
-                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -406,8 +406,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     id="rent_period"
                     value={formData.rent_period}
                     onChange={(e) => setFormData({ ...formData, rent_period: e.target.value })}
-                    placeholder="e.g., January 2024"
-                  />
+                    placeholder="e.g., January 2024" />
+
                 </div>
                 <div>
                   <Label htmlFor="rent_months">Number of Rent Months</Label>
@@ -416,8 +416,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     type="number"
                     min="1"
                     value={formData.rent_months}
-                    onChange={(e) => setFormData({ ...formData, rent_months: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, rent_months: e.target.value })} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -428,10 +428,10 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => handleAmountChange(e.target.value)}
-                  />
+                    onChange={(e) => handleAmountChange(e.target.value)} />
+
                   {formData.amount &&
-                    <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                       In words: {getCurrentAmountInWords()}
                     </p>
                   }
@@ -443,8 +443,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.late_fee}
-                    onChange={(e) => setFormData({ ...formData, late_fee: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, late_fee: e.target.value })} />
+
                 </div>
               </div>
               <div>
@@ -454,8 +454,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                   value={formData.bank_information}
                   onChange={(e) => setFormData({ ...formData, bank_information: e.target.value })}
                   placeholder="Bank name, account number, routing number, etc."
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
@@ -463,8 +463,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter invoice description"
-                />
+                  placeholder="Enter invoice description" />
+
               </div>
               <Button onClick={handleCreateInvoice} className="w-full">
                 Create Invoice
@@ -476,7 +476,7 @@ const InvoiceManagementWithPDF: React.FC = () => {
 
       <div className="grid gap-4">
         {invoices.map((invoice) =>
-          <Card key={invoice.id}>
+        <Card key={invoice.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -499,41 +499,41 @@ const InvoiceManagementWithPDF: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendEmail(invoice)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendEmail(invoice)}>
+
                     <Mail className="h-4 w-4 mr-1" />
                     Send Email
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedInvoice(invoice);
-                      setIsViewDialogOpen(true);
-                    }}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedInvoice(invoice);
+                    setIsViewDialogOpen(true);
+                  }}>
+
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateInvoicePDF(invoice)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateInvoicePDF(invoice)}>
+
                     <Download className="h-4 w-4 mr-1" />
                     Download PDF
                   </Button>
                   {invoice.status === 'pending' &&
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusUpdate(invoice, 'paid')}
-                    >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusUpdate(invoice, 'paid')}>
+
                       Mark Paid
                     </Button>
-                  }
+                }
                 </div>
               </div>
             </CardContent>
@@ -542,7 +542,7 @@ const InvoiceManagementWithPDF: React.FC = () => {
       </div>
 
       {selectedInvoice &&
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Invoice Details</DialogTitle>
@@ -627,18 +627,18 @@ const InvoiceManagementWithPDF: React.FC = () => {
 
       {/* Email Dialog */}
       {selectedInvoice && selectedTenant && selectedProperty &&
-        <EmailDialog
-          open={isEmailDialogOpen}
-          onOpenChange={setIsEmailDialogOpen}
-          type="invoice"
-          data={selectedInvoice}
-          tenant={selectedTenant}
-          property={selectedProperty}
-        />
+      <EmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        type="invoice"
+        data={selectedInvoice}
+        tenant={selectedTenant}
+        property={selectedProperty} />
+
       }
 
       {invoices.length === 0 &&
-        <Card>
+      <Card>
           <CardContent className="p-12 text-center">
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
@@ -650,8 +650,8 @@ const InvoiceManagementWithPDF: React.FC = () => {
           </CardContent>
         </Card>
       }
-    </div>
-  );
+    </div>);
+
 };
 
 export default InvoiceManagementWithPDF;

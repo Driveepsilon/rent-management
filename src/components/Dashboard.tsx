@@ -15,6 +15,8 @@ import {
 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import PaymentTrackingDashboard from '@/components/PaymentTrackingDashboard';
 import EmailServiceStatus from '@/components/EmailServiceStatus';
 
@@ -31,6 +33,8 @@ interface DashboardStats {
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [stats, setStats] = useState<DashboardStats>({
     totalTenants: 0,
     totalProperties: 0,
@@ -56,7 +60,7 @@ const Dashboard: React.FC = () => {
       const { data: userData, error: userError } = await window.ezsite.apis.getUserInfo();
       if (userError) {
         toast({
-          title: 'Authentication Required',
+          title: t('common.error'),
           description: 'Please log in to view your dashboard.',
           variant: 'destructive'
         });
@@ -68,8 +72,7 @@ const Dashboard: React.FC = () => {
       window.ezsite.apis.tablePage(26864, { PageNo: 1, PageSize: 1000, Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }] }),
       window.ezsite.apis.tablePage(26865, { PageNo: 1, PageSize: 1000, Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }] }),
       window.ezsite.apis.tablePage(26867, { PageNo: 1, PageSize: 1000, Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }] }),
-      window.ezsite.apis.tablePage(26868, { PageNo: 1, PageSize: 1000, Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }] })]
-      );
+      window.ezsite.apis.tablePage(26868, { PageNo: 1, PageSize: 1000, Filters: [{ name: 'user_id', op: 'Equal', value: userData.ID }] })]);
 
       const tenants = tenantsRes.data?.List || [];
       const properties = propertiesRes.data?.List || [];
@@ -100,7 +103,7 @@ const Dashboard: React.FC = () => {
       const activities = [
       ...payments.slice(-5).map((payment) => ({
         type: 'payment',
-        description: `Payment received: $${payment.amount}`,
+        description: `Payment received: ${formatCurrency(payment.amount)}`,
         date: payment.payment_date
       })),
       ...invoices.slice(-5).map((invoice) => ({
@@ -114,7 +117,7 @@ const Dashboard: React.FC = () => {
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: 'Failed to load dashboard data',
         variant: 'destructive'
       });
@@ -125,14 +128,14 @@ const Dashboard: React.FC = () => {
 
   const statCards = [
   {
-    title: 'Total Tenants',
+    title: t('dashboard.totalTenants'),
     value: stats.totalTenants,
     icon: Users,
     color: 'text-blue-600',
     bgColor: 'bg-blue-100'
   },
   {
-    title: 'Total Properties',
+    title: t('dashboard.totalProperties'),
     value: stats.totalProperties,
     icon: Building,
     color: 'text-green-600',
@@ -146,8 +149,8 @@ const Dashboard: React.FC = () => {
     bgColor: 'bg-yellow-100'
   },
   {
-    title: 'Monthly Revenue',
-    value: `$${stats.monthlyRevenue.toLocaleString()}`,
+    title: t('dashboard.monthlyRevenue'),
+    value: formatCurrency(stats.monthlyRevenue),
     icon: DollarSign,
     color: 'text-purple-600',
     bgColor: 'bg-purple-100'
@@ -176,9 +179,9 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title')}</h1>
         <Button asChild>
-          <Link to="/tenants">Quick Add Tenant</Link>
+          <Link to="/tenants">{t('dashboard.addTenant')}</Link>
         </Button>
       </div>
 
@@ -222,7 +225,7 @@ const Dashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
               <FileText className="h-4 w-4 text-yellow-500 mr-2" />
-              Pending Invoices
+              {t('dashboard.pendingInvoices')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -246,32 +249,38 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t('dashboard.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
               <Link to="/tenants">
                 <Users className="h-6 w-6" />
-                <span>Add Tenant</span>
+                <span>{t('dashboard.addTenant')}</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
               <Link to="/properties">
                 <Building className="h-6 w-6" />
-                <span>Add Property</span>
+                <span>{t('dashboard.addProperty')}</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
               <Link to="/invoices">
                 <FileText className="h-6 w-6" />
-                <span>Create Invoice</span>
+                <span>{t('dashboard.createInvoice')}</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
               <Link to="/receipts">
                 <CreditCard className="h-6 w-6" />
                 <span>Record Payment</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+              <Link to="/reports">
+                <TrendingUp className="h-6 w-6" />
+                <span>{t('dashboard.viewReports')}</span>
               </Link>
             </Button>
           </div>
@@ -281,7 +290,7 @@ const Dashboard: React.FC = () => {
       {/* Recent Activities */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
+          <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentActivities.length === 0 ?

@@ -62,8 +62,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
   });
 
   const paymentMethods = [
-    'Cash', 'Check', 'Bank Transfer', 'Credit Card', 'Online Payment', 'Money Order'
-  ];
+  'Cash', 'Check', 'Bank Transfer', 'Credit Card', 'Online Payment', 'Money Order'];
+
 
   useEffect(() => {
     fetchPayments();
@@ -115,9 +115,9 @@ const ReceiptManagementWithPDF: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'pending' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'pending' }]
+
       });
       if (error) throw error;
       setInvoices(data.List || []);
@@ -137,9 +137,9 @@ const ReceiptManagementWithPDF: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -271,10 +271,10 @@ const ReceiptManagementWithPDF: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'failed':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -315,7 +315,7 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {tenants.map((tenant) =>
-                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.tenant_name}
                         </SelectItem>
                       )}
@@ -330,7 +330,7 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {getFilteredInvoices().map((invoice) =>
-                        <SelectItem key={invoice.id} value={invoice.id.toString()}>
+                      <SelectItem key={invoice.id} value={invoice.id.toString()}>
                           {invoice.invoice_number} - ${invoice.amount.toFixed(2)}
                         </SelectItem>
                       )}
@@ -345,8 +345,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     id="payment_date"
                     type="date"
                     value={formData.payment_date}
-                    onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })} />
+
                 </div>
                 <div>
                   <Label htmlFor="amount">Amount</Label>
@@ -355,8 +355,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -368,7 +368,7 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {paymentMethods.map((method) =>
-                        <SelectItem key={method} value={method}>
+                      <SelectItem key={method} value={method}>
                           {method}
                         </SelectItem>
                       )}
@@ -381,8 +381,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
                     id="reference_number"
                     value={formData.reference_number}
                     onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
-                    placeholder="Check number, transaction ID, etc."
-                  />
+                    placeholder="Check number, transaction ID, etc." />
+
                 </div>
               </div>
               <div>
@@ -391,8 +391,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Additional notes about the payment"
-                />
+                  placeholder="Additional notes about the payment" />
+
               </div>
               <Button onClick={handleCreatePayment} className="w-full">
                 Record Payment
@@ -404,7 +404,7 @@ const ReceiptManagementWithPDF: React.FC = () => {
 
       <div className="grid gap-4">
         {payments.map((payment) =>
-          <Card key={payment.id}>
+        <Card key={payment.id}>
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -425,18 +425,18 @@ const ReceiptManagementWithPDF: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendEmail(payment)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendEmail(payment)}>
+
                     <Mail className="h-4 w-4 mr-1" />
                     Send Email
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateReceiptPDF(payment)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateReceiptPDF(payment)}>
+
                     <Download className="h-4 w-4 mr-1" />
                     Download PDF
                   </Button>
@@ -449,18 +449,18 @@ const ReceiptManagementWithPDF: React.FC = () => {
 
       {/* Email Dialog */}
       {selectedPayment && selectedTenant &&
-        <EmailDialog
-          open={isEmailDialogOpen}
-          onOpenChange={setIsEmailDialogOpen}
-          type="receipt"
-          data={selectedPayment}
-          tenant={selectedTenant}
-          invoice={selectedInvoice}
-        />
+      <EmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        type="receipt"
+        data={selectedPayment}
+        tenant={selectedTenant}
+        invoice={selectedInvoice} />
+
       }
 
       {payments.length === 0 &&
-        <Card>
+      <Card>
           <CardContent className="p-12 text-center">
             <Receipt className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No payments recorded yet</h3>
@@ -472,8 +472,8 @@ const ReceiptManagementWithPDF: React.FC = () => {
           </CardContent>
         </Card>
       }
-    </div>
-  );
+    </div>);
+
 };
 
 export default ReceiptManagementWithPDF;

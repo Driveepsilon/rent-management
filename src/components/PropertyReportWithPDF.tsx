@@ -151,10 +151,10 @@ const PropertyReportWithPDF: React.FC = () => {
         OrderByField: 'invoice_date',
         IsAsc: true,
         Filters: [
-          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-          { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
-          { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }
-        ]
+        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+        { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
+        { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }]
+
       });
 
       if (invoicesError) throw invoicesError;
@@ -171,14 +171,14 @@ const PropertyReportWithPDF: React.FC = () => {
           OrderByField: 'payment_date',
           IsAsc: true,
           Filters: [
-            { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
-            { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }
-          ]
+          { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
+          { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }]
+
         });
 
         if (paymentsError) throw paymentsError;
         payments = (paymentsData.List || []).filter((payment) =>
-          invoiceIds.includes(payment.invoice_id)
+        invoiceIds.includes(payment.invoice_id)
         );
       }
 
@@ -189,10 +189,10 @@ const PropertyReportWithPDF: React.FC = () => {
         OrderByField: 'expense_date',
         IsAsc: true,
         Filters: [
-          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-          { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
-          { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }
-        ]
+        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+        { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
+        { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }]
+
       });
 
       if (expensesError) throw expensesError;
@@ -276,7 +276,7 @@ const PropertyReportWithPDF: React.FC = () => {
       return;
     }
 
-    const selectedPropertyData = properties.find(p => p.id === parseInt(selectedProperty));
+    const selectedPropertyData = properties.find((p) => p.id === parseInt(selectedProperty));
     if (!selectedPropertyData) {
       toast({
         title: "Error",
@@ -295,7 +295,7 @@ const PropertyReportWithPDF: React.FC = () => {
         endDate,
         description
       );
-      
+
       toast({
         title: "PDF Downloaded",
         description: "Property report PDF has been downloaded successfully"
@@ -608,7 +608,7 @@ const PropertyReportWithPDF: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {properties.map((property) =>
-                    <SelectItem key={property.id} value={property.id.toString()}>
+                  <SelectItem key={property.id} value={property.id.toString()}>
                       {property.name} - {property.address}
                     </SelectItem>
                   )}
@@ -622,8 +622,8 @@ const PropertyReportWithPDF: React.FC = () => {
                 id="description"
                 placeholder="Report description (optional)"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
+                onChange={(e) => setDescription(e.target.value)} />
+
             </div>
 
             <div className="space-y-2">
@@ -632,8 +632,8 @@ const PropertyReportWithPDF: React.FC = () => {
                 id="startDate"
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+                onChange={(e) => setStartDate(e.target.value)} />
+
             </div>
 
             <div className="space-y-2">
@@ -642,8 +642,8 @@ const PropertyReportWithPDF: React.FC = () => {
                 id="endDate"
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+                onChange={(e) => setEndDate(e.target.value)} />
+
             </div>
           </div>
 
@@ -651,8 +651,8 @@ const PropertyReportWithPDF: React.FC = () => {
             <Button
               onClick={generateReport}
               disabled={loading || !selectedProperty || !startDate || !endDate}
-              className="flex-1"
-            >
+              className="flex-1">
+
               {loading ? 'Generating Report...' : 'Generate Report'}
             </Button>
             
@@ -660,8 +660,8 @@ const PropertyReportWithPDF: React.FC = () => {
               onClick={handleDownloadPDF}
               disabled={!selectedProperty || reportData.length === 0}
               variant="outline"
-              className="flex items-center gap-2"
-            >
+              className="flex items-center gap-2">
+
               <Download className="w-4 h-4" />
               Download PDF
             </Button>
@@ -670,8 +670,8 @@ const PropertyReportWithPDF: React.FC = () => {
               onClick={handleEmailReport}
               disabled={!selectedProperty || reportData.length === 0}
               variant="outline"
-              className="flex items-center gap-2"
-            >
+              className="flex items-center gap-2">
+
               <Mail className="w-4 h-4" />
               Email Report
             </Button>
@@ -681,7 +681,7 @@ const PropertyReportWithPDF: React.FC = () => {
 
       {/* Owner Information */}
       {selectedProperty && propertyOwner &&
-        <Card>
+      <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
@@ -709,7 +709,7 @@ const PropertyReportWithPDF: React.FC = () => {
 
       {/* Report Summary */}
       {reportData.length > 0 &&
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -759,7 +759,7 @@ const PropertyReportWithPDF: React.FC = () => {
 
       {/* Report Details */}
       {reportData.length > 0 &&
-        <Card>
+      <Card>
           <CardHeader>
             <CardTitle>Financial Transactions</CardTitle>
             <CardDescription>
@@ -784,7 +784,7 @@ const PropertyReportWithPDF: React.FC = () => {
                 </thead>
                 <tbody>
                   {reportData.map((transaction, index) =>
-                    <tr key={index} className="hover:bg-gray-50">
+                <tr key={index} className="hover:bg-gray-50">
                       <td className="border border-gray-300 px-4 py-2">
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
@@ -800,17 +800,17 @@ const PropertyReportWithPDF: React.FC = () => {
                         {transaction.category || '-'}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-medium ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`
-                      }>
+                  transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`
+                  }>
                         {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString()}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-bold ${
-                        transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'}`
-                      }>
+                  transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'}`
+                  }>
                         ${transaction.balance.toLocaleString()}
                       </td>
                     </tr>
-                  )}
+                )}
                 </tbody>
               </table>
             </div>
@@ -819,7 +819,7 @@ const PropertyReportWithPDF: React.FC = () => {
       }
 
       {reportData.length === 0 && selectedProperty && startDate && endDate && !loading &&
-        <Card>
+      <Card>
           <CardContent className="py-12 text-center">
             <CalendarDays className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="text-lg font-semibold mb-2">No Data Found</h3>
@@ -850,8 +850,8 @@ const PropertyReportWithPDF: React.FC = () => {
                   type="email"
                   value={emailData.recipientEmail}
                   onChange={(e) => setEmailData({ ...emailData, recipientEmail: e.target.value })}
-                  placeholder="Enter recipient email"
-                />
+                  placeholder="Enter recipient email" />
+
               </div>
               <div>
                 <Label htmlFor="subject">Subject</Label>
@@ -859,8 +859,8 @@ const PropertyReportWithPDF: React.FC = () => {
                   id="subject"
                   value={generateEmailContent().subject}
                   disabled
-                  className="bg-gray-50"
-                />
+                  className="bg-gray-50" />
+
               </div>
             </div>
 
@@ -872,8 +872,8 @@ const PropertyReportWithPDF: React.FC = () => {
                 value={emailData.customMessage}
                 onChange={(e) => setEmailData({ ...emailData, customMessage: e.target.value })}
                 placeholder="Add a personal message that will appear at the top of the email..."
-                rows={3}
-              />
+                rows={3} />
+
             </div>
 
             {/* Actions */}
@@ -881,20 +881,20 @@ const PropertyReportWithPDF: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => setEmailDialog(false)}
-                disabled={sendingEmail}
-              >
+                disabled={sendingEmail}>
+
                 Cancel
               </Button>
               <Button
                 onClick={sendEmailReport}
-                disabled={sendingEmail || !emailData.recipientEmail}
-              >
+                disabled={sendingEmail || !emailData.recipientEmail}>
+
                 {sendingEmail ?
-                  <>
+                <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...
                   </> :
-                  <>
+                <>
                     <Send className="mr-2 h-4 w-4" />
                     Send Email
                   </>
@@ -904,8 +904,8 @@ const PropertyReportWithPDF: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PropertyReportWithPDF;
