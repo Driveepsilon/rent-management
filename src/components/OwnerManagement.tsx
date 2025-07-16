@@ -53,7 +53,7 @@ const OwnerManagement: React.FC = () => {
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [selectedOwnerId, setSelectedOwnerId] = useState<number | null>(null);
   const [ownerContacts, setOwnerContacts] = useState<OwnerContact[]>([]);
-  
+
   const [formData, setFormData] = useState({
     type_of_owner: 'individual',
     owner_name: '',
@@ -133,12 +133,12 @@ const OwnerManagement: React.FC = () => {
         OrderByField: 'contact_name',
         IsAsc: true,
         Filters: [
-          {
-            name: 'owner_id',
-            op: 'Equal',
-            value: ownerId
-          }
-        ]
+        {
+          name: 'owner_id',
+          op: 'Equal',
+          value: ownerId
+        }]
+
       });
 
       if (error) throw error;
@@ -339,7 +339,7 @@ const OwnerManagement: React.FC = () => {
   };
 
   const getPropertyName = (propertyId: number) => {
-    const property = properties.find(p => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     return property ? property.name : 'Unknown Property';
   };
 
@@ -371,8 +371,8 @@ const OwnerManagement: React.FC = () => {
                   <Label htmlFor="type_of_owner">Type of Owner</Label>
                   <Select
                     value={formData.type_of_owner}
-                    onValueChange={(value) => setFormData({ ...formData, type_of_owner: value })}
-                  >
+                    onValueChange={(value) => setFormData({ ...formData, type_of_owner: value })}>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -388,8 +388,8 @@ const OwnerManagement: React.FC = () => {
                     id="owner_name"
                     value={formData.owner_name}
                     onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                    placeholder="Enter owner name"
-                  />
+                    placeholder="Enter owner name" />
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -400,8 +400,8 @@ const OwnerManagement: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="Enter email address"
-                  />
+                    placeholder="Enter email address" />
+
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
@@ -409,8 +409,8 @@ const OwnerManagement: React.FC = () => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="Enter phone number"
-                  />
+                    placeholder="Enter phone number" />
+
                 </div>
               </div>
               <div>
@@ -419,24 +419,24 @@ const OwnerManagement: React.FC = () => {
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Enter owner address"
-                />
+                  placeholder="Enter owner address" />
+
               </div>
               <div>
                 <Label htmlFor="property_id">Property</Label>
                 <Select
                   value={formData.property_id}
-                  onValueChange={(value) => setFormData({ ...formData, property_id: value })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
+
                   <SelectTrigger>
                     <SelectValue placeholder="Select property" />
                   </SelectTrigger>
                   <SelectContent>
-                    {properties.map((property) => (
-                      <SelectItem key={property.id} value={property.id.toString()}>
+                    {properties.map((property) =>
+                    <SelectItem key={property.id} value={property.id.toString()}>
                         {property.name} - {property.address}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -446,15 +446,15 @@ const OwnerManagement: React.FC = () => {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Additional notes about the owner"
-                />
+                  placeholder="Additional notes about the owner" />
+
               </div>
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -468,8 +468,8 @@ const OwnerManagement: React.FC = () => {
             <div className="flex justify-end space-x-2">
               <Button
                 variant="outline"
-                onClick={() => setIsAddDialogOpen(false)}
-              >
+                onClick={() => setIsAddDialogOpen(false)}>
+
                 Cancel
               </Button>
               <Button onClick={handleAddOwner}>Add Owner</Button>
@@ -479,17 +479,17 @@ const OwnerManagement: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {owners.map((owner) => (
-          <Card key={owner.id}>
+        {owners.map((owner) =>
+        <Card key={owner.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    {owner.type_of_owner === 'company' ? (
-                      <Building className="w-5 h-5" />
-                    ) : (
-                      <User className="w-5 h-5" />
-                    )}
+                    {owner.type_of_owner === 'company' ?
+                  <Building className="w-5 h-5" /> :
+
+                  <User className="w-5 h-5" />
+                  }
                     {owner.owner_name}
                   </CardTitle>
                   <CardDescription>
@@ -512,51 +512,51 @@ const OwnerManagement: React.FC = () => {
                   <Mail className="w-4 h-4" />
                   <span>{owner.email}</span>
                 </div>
-                {owner.phone && (
-                  <div className="flex items-center gap-2">
+                {owner.phone &&
+              <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
                     <span>{owner.phone}</span>
                   </div>
-                )}
+              }
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   <span>{owner.address}</span>
                 </div>
-                {owner.notes && (
-                  <div className="text-sm text-gray-600">
+                {owner.notes &&
+              <div className="text-sm text-gray-600">
                     <strong>Notes:</strong> {owner.notes}
                   </div>
-                )}
+              }
               </div>
               <div className="flex justify-end space-x-2 mt-4">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openContactsDialog(owner.id)}
-                >
+                variant="outline"
+                size="sm"
+                onClick={() => openContactsDialog(owner.id)}>
+
                   <Users className="w-4 h-4 mr-2" />
                   Contacts
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openEditDialog(owner)}
-                >
+                variant="outline"
+                size="sm"
+                onClick={() => openEditDialog(owner)}>
+
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
                 <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteOwner(owner.id)}
-                >
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteOwner(owner.id)}>
+
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </Button>
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
       {/* Edit Owner Dialog */}
@@ -574,8 +574,8 @@ const OwnerManagement: React.FC = () => {
                 <Label htmlFor="type_of_owner">Type of Owner</Label>
                 <Select
                   value={formData.type_of_owner}
-                  onValueChange={(value) => setFormData({ ...formData, type_of_owner: value })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, type_of_owner: value })}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -591,8 +591,8 @@ const OwnerManagement: React.FC = () => {
                   id="owner_name"
                   value={formData.owner_name}
                   onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                  placeholder="Enter owner name"
-                />
+                  placeholder="Enter owner name" />
+
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -603,8 +603,8 @@ const OwnerManagement: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter email address"
-                />
+                  placeholder="Enter email address" />
+
               </div>
               <div>
                 <Label htmlFor="phone">Phone</Label>
@@ -612,8 +612,8 @@ const OwnerManagement: React.FC = () => {
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="Enter phone number"
-                />
+                  placeholder="Enter phone number" />
+
               </div>
             </div>
             <div>
@@ -622,24 +622,24 @@ const OwnerManagement: React.FC = () => {
                 id="address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Enter owner address"
-              />
+                placeholder="Enter owner address" />
+
             </div>
             <div>
               <Label htmlFor="property_id">Property</Label>
               <Select
                 value={formData.property_id}
-                onValueChange={(value) => setFormData({ ...formData, property_id: value })}
-              >
+                onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
+
                 <SelectTrigger>
                   <SelectValue placeholder="Select property" />
                 </SelectTrigger>
                 <SelectContent>
-                  {properties.map((property) => (
-                    <SelectItem key={property.id} value={property.id.toString()}>
+                  {properties.map((property) =>
+                  <SelectItem key={property.id} value={property.id.toString()}>
                       {property.name} - {property.address}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -649,15 +649,15 @@ const OwnerManagement: React.FC = () => {
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about the owner"
-              />
+                placeholder="Additional notes about the owner" />
+
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
+                onValueChange={(value) => setFormData({ ...formData, status: value })}>
+
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -671,8 +671,8 @@ const OwnerManagement: React.FC = () => {
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
+              onClick={() => setIsEditDialogOpen(false)}>
+
               Cancel
             </Button>
             <Button onClick={handleEditOwner}>Update Owner</Button>
@@ -705,8 +705,8 @@ const OwnerManagement: React.FC = () => {
                         id="contact_name"
                         value={contactFormData.contact_name}
                         onChange={(e) => setContactFormData({ ...contactFormData, contact_name: e.target.value })}
-                        placeholder="Enter contact name"
-                      />
+                        placeholder="Enter contact name" />
+
                     </div>
                     <div>
                       <Label htmlFor="contact_email">Contact Email</Label>
@@ -715,8 +715,8 @@ const OwnerManagement: React.FC = () => {
                         type="email"
                         value={contactFormData.contact_email}
                         onChange={(e) => setContactFormData({ ...contactFormData, contact_email: e.target.value })}
-                        placeholder="Enter contact email"
-                      />
+                        placeholder="Enter contact email" />
+
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -726,8 +726,8 @@ const OwnerManagement: React.FC = () => {
                         id="contact_phone"
                         value={contactFormData.contact_phone}
                         onChange={(e) => setContactFormData({ ...contactFormData, contact_phone: e.target.value })}
-                        placeholder="Enter contact phone"
-                      />
+                        placeholder="Enter contact phone" />
+
                     </div>
                     <div>
                       <Label htmlFor="position">Position</Label>
@@ -735,8 +735,8 @@ const OwnerManagement: React.FC = () => {
                         id="position"
                         value={contactFormData.position}
                         onChange={(e) => setContactFormData({ ...contactFormData, position: e.target.value })}
-                        placeholder="Enter position/role"
-                      />
+                        placeholder="Enter position/role" />
+
                     </div>
                   </div>
                   <div>
@@ -745,8 +745,8 @@ const OwnerManagement: React.FC = () => {
                       id="contact_address"
                       value={contactFormData.contact_address}
                       onChange={(e) => setContactFormData({ ...contactFormData, contact_address: e.target.value })}
-                      placeholder="Enter contact address"
-                    />
+                      placeholder="Enter contact address" />
+
                   </div>
                   <div className="flex justify-end">
                     <Button onClick={handleAddContact}>Add Contact</Button>
@@ -758,70 +758,70 @@ const OwnerManagement: React.FC = () => {
             {/* Contacts List */}
             <div className="space-y-2">
               <h3 className="font-medium">Existing Contacts</h3>
-              {ownerContacts.length === 0 ? (
-                <p className="text-gray-500">No contacts added yet.</p>
-              ) : (
-                ownerContacts.map((contact) => (
-                  <Card key={contact.id}>
+              {ownerContacts.length === 0 ?
+              <p className="text-gray-500">No contacts added yet.</p> :
+
+              ownerContacts.map((contact) =>
+              <Card key={contact.id}>
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
                             <strong>{contact.contact_name}</strong>
-                            {contact.is_primary && (
-                              <Badge variant="default" className="text-xs">Primary</Badge>
-                            )}
+                            {contact.is_primary &&
+                        <Badge variant="default" className="text-xs">Primary</Badge>
+                        }
                           </div>
-                          {contact.position && (
-                            <div className="text-sm text-gray-600">
+                          {contact.position &&
+                      <div className="text-sm text-gray-600">
                               <strong>Position:</strong> {contact.position}
                             </div>
-                          )}
+                      }
                           <div className="flex items-center gap-2">
                             <Mail className="w-4 h-4" />
                             <span>{contact.contact_email}</span>
                           </div>
-                          {contact.contact_phone && (
-                            <div className="flex items-center gap-2">
+                          {contact.contact_phone &&
+                      <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4" />
                               <span>{contact.contact_phone}</span>
                             </div>
-                          )}
-                          {contact.contact_address && (
-                            <div className="flex items-center gap-2">
+                      }
+                          {contact.contact_address &&
+                      <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4" />
                               <span>{contact.contact_address}</span>
                             </div>
-                          )}
+                      }
                         </div>
                         <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteContact(contact.id)}
-                        >
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteContact(contact.id)}>
+
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              )}
+              )
+              }
             </div>
           </div>
           
           <div className="flex justify-end">
             <Button
               variant="outline"
-              onClick={() => setIsContactDialogOpen(false)}
-            >
+              onClick={() => setIsContactDialogOpen(false)}>
+
               Close
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default OwnerManagement;
