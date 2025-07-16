@@ -16,6 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import PaymentTrackingDashboard from '@/components/PaymentTrackingDashboard';
+import EmailServiceStatus from '@/components/EmailServiceStatus';
 
 interface DashboardStats {
   totalTenants: number;
@@ -313,6 +314,9 @@ const Dashboard: React.FC = () => {
 
       {/* Payment Tracking Dashboard */}
       <PaymentTrackingDashboard />
+
+      {/* Email Service Status */}
+      <EmailServiceStatus />
     </div>);
 
 };
