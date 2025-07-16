@@ -166,19 +166,27 @@ const ReceiptManagement: React.FC = () => {
       const { data, error } = await window.ezsite.apis.tablePage('26864', {
         PageNo: 1,
         PageSize: 100,
-        OrderByField: 'id',
-        IsAsc: false,
+        OrderByField: 'tenant_name',
+        IsAsc: true,
         Filters: [
         { name: 'user_id', op: 'Equal', value: userData.ID },
         { name: 'status', op: 'Equal', value: 'active' }]
 
       });
       if (error) throw error;
+      
+      console.log('Fetched tenants:', data.List); // Debug log
       setTenants(data.List || []);
     } catch (error) {
       console.error('Error fetching tenants:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch tenants',
+        variant: 'destructive'
+      });
     }
   };
+
 
   const handleCreatePayment = async () => {
     try {
@@ -384,38 +392,21 @@ const ReceiptManagement: React.FC = () => {
     const tenant = tenants.find((t) => t.id === payment.tenant_id);
     const invoice = invoices.find((inv) => inv.id === payment.invoice_id);
 
-    const receiptContent = `
-      PAYMENT RECEIPT
-      
-      Receipt Number: RCP-${payment.id}
-      Payment Date: ${new Date(payment.payment_date).toLocaleDateString()}
-      
-      Received From:
-      ${tenant ? tenant.tenant_name : 'Unknown Tenant'}
-      ${tenant ? tenant.email : ''}
-      
-      Payment Details:
-      Amount: $${payment.amount.toFixed(2)}
-      Payment Method: ${payment.payment_method}
-      Reference Number: ${payment.reference_number}
-      
-      For Invoice: ${invoice ? invoice.invoice_number : 'Unknown'}
-      
-      Notes: ${payment.notes}
-      
-      Status: ${payment.status.toUpperCase()}
-      
-      Thank you for your payment!
-    `;
+    if (!tenant) {
+      toast({
+        title: 'Error',
+        description: 'Tenant not found',
+        variant: 'destructive'
+      });
+      return;
+    }
 
-    const blob = new Blob([receiptContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `receipt-${payment.id}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Use enhanced PDF generator
+    import('@/utils/enhancedPdfGenerator').then(({ enhancedPdfGenerator }) => {
+      enhancedPdfGenerator.downloadReceipt(payment, tenant, invoice);
+    });
   };
+
 
   const getFilteredInvoices = () => {
     if (!formData.tenant_id) return invoices;

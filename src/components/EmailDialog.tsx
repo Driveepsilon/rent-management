@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Send, Loader2 } from 'lucide-react';
 import { EmailService } from '@/utils/emailService';
+import { sendEmailWithPDF } from '@/utils/enhancedEmailService';
 
 interface EmailDialogProps {
   open: boolean;
@@ -69,16 +70,26 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
       // Update tenant email if changed
       const tenantToSend = { ...tenant, email: recipientEmail };
 
-      if (type === 'invoice') {
-        result = await EmailService.sendInvoiceEmail(data, tenantToSend, property, customMessage);
-      } else {
-        result = await EmailService.sendReceiptEmail(data, tenantToSend, invoice, customMessage);
-      }
+      // Use enhanced email service with PDF attachment
+      const emailData = {
+        to: [recipientEmail],
+        subject: type === 'invoice' ? `Invoice ${data.invoice_number}` : `Receipt RCP-${data.id}`,
+        html: customMessage ? `<p>${customMessage}</p><br/>` : '',
+        text: customMessage || ''
+      };
 
-      if (result.success) {
+      const pdfData = {
+        type: type as 'invoice' | 'receipt',
+        data: type === 'invoice' ? { ...data, tenant: tenantToSend, property } : { ...data, tenant: tenantToSend, invoice },
+        filename: type === 'invoice' ? `invoice-${data.invoice_number}.pdf` : `receipt-${data.id}.pdf`
+      };
+
+      result = await sendEmailWithPDF(emailData, pdfData);
+
+      if (!result.error) {
         toast({
           title: '✅ Email Sent Successfully!',
-          description: `${type === 'invoice' ? 'Invoice' : 'Receipt'} has been sent to ${recipientEmail}`,
+          description: `${type === 'invoice' ? 'Invoice' : 'Receipt'} with PDF attachment has been sent to ${recipientEmail}`,
           duration: 5000
         });
         onOpenChange(false);

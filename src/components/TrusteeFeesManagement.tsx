@@ -406,11 +406,29 @@ const TrusteeFeesManagement: React.FC = () => {
 
   const addInvoiceItem = async () => {
     try {
+      if (!selectedInvoice) {
+        toast({
+          title: t('common.error'),
+          description: 'No invoice selected',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (!newItem.article_id) {
+        toast({
+          title: t('common.error'),
+          description: 'Please select an article',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const selectedArticleData = articles.find((a) => a.id === newItem.article_id);
       const totalAmount = newItem.quantity * newItem.unit_price;
 
       const { error } = await window.ezsite.apis.tableCreate(28874, {
-        invoice_id: selectedInvoice!.id,
+        invoice_id: selectedInvoice.id,
         article_id: newItem.article_id,
         description: newItem.description || selectedArticleData?.description || '',
         quantity: newItem.quantity,
@@ -427,7 +445,7 @@ const TrusteeFeesManagement: React.FC = () => {
       const newTotal = currentTotal + totalAmount;
 
       await window.ezsite.apis.tableUpdate(28873, {
-        id: selectedInvoice!.id,
+        id: selectedInvoice.id,
         total_amount: newTotal
       });
 
@@ -438,7 +456,7 @@ const TrusteeFeesManagement: React.FC = () => {
         unit_price: 0
       });
 
-      loadInvoiceItems(selectedInvoice!.id);
+      loadInvoiceItems(selectedInvoice.id);
       loadInvoices();
 
       toast({
@@ -453,6 +471,7 @@ const TrusteeFeesManagement: React.FC = () => {
       });
     }
   };
+
 
   const deleteArticle = async (articleId: number) => {
     if (!confirm('Are you sure you want to delete this article?')) {

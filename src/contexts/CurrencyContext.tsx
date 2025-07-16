@@ -43,6 +43,7 @@ export const CurrencyProvider: React.FC<{children: React.ReactNode;}> = ({ child
     }
   };
 
+
   const formatCurrency = (amount: number, currencyCode?: Currency): string => {
     const code = currencyCode || currency;
     const symbol = getCurrencySymbol(code);
