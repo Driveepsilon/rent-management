@@ -31,12 +31,12 @@ interface Property {
 }
 
 const EXPENSE_CATEGORIES = [
-  'trustee fees',
-  'internet',
-  'management fees',
-  'cleaning services',
-  'others'
-];
+'trustee fees',
+'internet',
+'management fees',
+'cleaning services',
+'others'];
+
 
 const EXPENSE_STATUSES = ['pending', 'approved', 'paid'];
 
@@ -71,7 +71,7 @@ const ExpenseManagement: React.FC = () => {
         IsAsc: false,
         Filters: []
       });
-      
+
       if (error) throw error;
       setExpenses(data.List || []);
     } catch (error) {
@@ -95,7 +95,7 @@ const ExpenseManagement: React.FC = () => {
         IsAsc: true,
         Filters: []
       });
-      
+
       if (error) throw error;
       setProperties(data.List || []);
     } catch (error) {
@@ -115,7 +115,7 @@ const ExpenseManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.property_id || !formData.expense_date || !formData.description || !formData.amount) {
       toast({
         title: 'Error',
@@ -195,7 +195,7 @@ const ExpenseManagement: React.FC = () => {
     try {
       const { error } = await window.ezsite.apis.tableDelete(28840, { ID: id });
       if (error) throw error;
-      
+
       toast({
         title: 'Success',
         description: 'Expense deleted successfully'
@@ -212,37 +212,37 @@ const ExpenseManagement: React.FC = () => {
   };
 
   const getPropertyName = (propertyId: number) => {
-    const property = properties.find(p => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     return property ? property.name : `Property ${propertyId}`;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
-      case 'paid': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'approved':return 'bg-blue-100 text-blue-800';
+      case 'paid':return 'bg-green-100 text-green-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'trustee fees': return 'bg-purple-100 text-purple-800';
-      case 'internet': return 'bg-cyan-100 text-cyan-800';
-      case 'management fees': return 'bg-orange-100 text-orange-800';
-      case 'cleaning services': return 'bg-green-100 text-green-800';
-      case 'others': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'trustee fees':return 'bg-purple-100 text-purple-800';
+      case 'internet':return 'bg-cyan-100 text-cyan-800';
+      case 'management fees':return 'bg-orange-100 text-orange-800';
+      case 'cleaning services':return 'bg-green-100 text-green-800';
+      case 'others':return 'bg-gray-100 text-gray-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredExpenses = expenses.filter(expense => {
+  const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         getPropertyName(expense.property_id).toLowerCase().includes(searchTerm.toLowerCase());
+    expense.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    getPropertyName(expense.property_id).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || expense.category === categoryFilter;
     const matchesStatus = statusFilter === 'all' || expense.status === statusFilter;
-    
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -252,8 +252,8 @@ const ExpenseManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading expenses...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -291,16 +291,16 @@ const ExpenseManagement: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="property_id">Property *</Label>
-                <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
+                <Select value={formData.property_id} onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select property" />
                   </SelectTrigger>
                   <SelectContent>
-                    {properties.map(property => (
-                      <SelectItem key={property.id} value={property.id.toString()}>
+                    {properties.map((property) =>
+                    <SelectItem key={property.id} value={property.id.toString()}>
                         {property.name}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -311,23 +311,23 @@ const ExpenseManagement: React.FC = () => {
                   id="expense_date"
                   type="date"
                   value={formData.expense_date}
-                  onChange={(e) => setFormData({...formData, expense_date: e.target.value})}
-                  required
-                />
+                  onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
+                  required />
+
               </div>
 
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {EXPENSE_CATEGORIES.map(category => (
-                      <SelectItem key={category} value={category}>
+                    {EXPENSE_CATEGORIES.map((category) =>
+                    <SelectItem key={category} value={category}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -337,10 +337,10 @@ const ExpenseManagement: React.FC = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter expense description"
-                  required
-                />
+                  required />
+
               </div>
 
               <div>
@@ -350,10 +350,10 @@ const ExpenseManagement: React.FC = () => {
                   type="number"
                   step="0.01"
                   value={formData.amount}
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   placeholder="0.00"
-                  required
-                />
+                  required />
+
               </div>
 
               <div>
@@ -361,23 +361,23 @@ const ExpenseManagement: React.FC = () => {
                 <Input
                   id="reference"
                   value={formData.reference}
-                  onChange={(e) => setFormData({...formData, reference: e.target.value})}
-                  placeholder="Invoice number, receipt, etc."
-                />
+                  onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                  placeholder="Invoice number, receipt, etc." />
+
               </div>
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {EXPENSE_STATUSES.map(status => (
-                      <SelectItem key={status} value={status}>
+                    {EXPENSE_STATUSES.map((status) =>
+                    <SelectItem key={status} value={status}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -412,7 +412,7 @@ const ExpenseManagement: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredExpenses.filter(e => e.status === 'pending').length}
+              {filteredExpenses.filter((e) => e.status === 'pending').length}
             </div>
             <p className="text-xs text-muted-foreground">
               Awaiting approval
@@ -427,7 +427,7 @@ const ExpenseManagement: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredExpenses.filter(e => e.status === 'paid').length}
+              {filteredExpenses.filter((e) => e.status === 'paid').length}
             </div>
             <p className="text-xs text-muted-foreground">
               Completed expenses
@@ -445,8 +445,8 @@ const ExpenseManagement: React.FC = () => {
               placeholder="Search expenses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+              className="pl-10" />
+
           </div>
         </div>
         <div className="flex gap-2">
@@ -457,11 +457,11 @@ const ExpenseManagement: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {EXPENSE_CATEGORIES.map(category => (
-                <SelectItem key={category} value={category}>
+              {EXPENSE_CATEGORIES.map((category) =>
+              <SelectItem key={category} value={category}>
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -470,11 +470,11 @@ const ExpenseManagement: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              {EXPENSE_STATUSES.map(status => (
-                <SelectItem key={status} value={status}>
+              {EXPENSE_STATUSES.map((status) =>
+              <SelectItem key={status} value={status}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -482,18 +482,18 @@ const ExpenseManagement: React.FC = () => {
 
       {/* Expenses List */}
       <div className="grid gap-4">
-        {filteredExpenses.length === 0 ? (
-          <Card>
+        {filteredExpenses.length === 0 ?
+        <Card>
             <CardContent className="flex items-center justify-center h-32">
               <div className="text-center">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                 <p className="text-gray-500">No expenses found</p>
               </div>
             </CardContent>
-          </Card>
-        ) : (
-          filteredExpenses.map(expense => (
-            <Card key={expense.id}>
+          </Card> :
+
+        filteredExpenses.map((expense) =>
+        <Card key={expense.id}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -516,38 +516,38 @@ const ExpenseManagement: React.FC = () => {
                         <DollarSign className="h-4 w-4" />
                         ${expense.amount.toFixed(2)}
                       </div>
-                      {expense.reference && (
-                        <div className="flex items-center gap-1">
+                      {expense.reference &&
+                  <div className="flex items-center gap-1">
                           <FileText className="h-4 w-4" />
                           {expense.reference}
                         </div>
-                      )}
+                  }
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(expense)}
-                    >
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEdit(expense)}>
+
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(expense.id)}
-                    >
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(expense.id)}>
+
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
+        )
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ExpenseManagement;

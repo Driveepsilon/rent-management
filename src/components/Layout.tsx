@@ -12,7 +12,8 @@ import {
   FileCheck,
   Menu,
   X,
-  Mail } from
+  Mail,
+  BarChart3 } from
 'lucide-react';
 
 interface LayoutProps {
@@ -33,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/receipts', label: 'Receipts', icon: Receipt },
   { href: '/expenses', label: 'Expenses', icon: CreditCard },
+  { href: '/reports', label: 'Reports', icon: BarChart3 },
   { href: '/email-history', label: 'Email History', icon: Mail }];
 
 
