@@ -32,6 +32,14 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
 
+  // Reset form when dialog opens/closes or tenant changes
+  React.useEffect(() => {
+    if (open) {
+      setRecipientEmail(tenant?.email || '');
+      setCustomMessage('');
+    }
+  }, [open, tenant?.email]);
+
   const handleSendEmail = async () => {
     if (!recipientEmail) {
       toast({
@@ -42,37 +50,54 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsSending(true);
 
     try {
       let result;
-      
+
+      // Update tenant email if changed
+      const tenantToSend = { ...tenant, email: recipientEmail };
+
       if (type === 'invoice') {
-        result = await EmailService.sendInvoiceEmail(data, tenant, property, customMessage);
+        result = await EmailService.sendInvoiceEmail(data, tenantToSend, property, customMessage);
       } else {
-        result = await EmailService.sendReceiptEmail(data, tenant, invoice, customMessage);
+        result = await EmailService.sendReceiptEmail(data, tenantToSend, invoice, customMessage);
       }
 
       if (result.success) {
         toast({
-          title: 'Email Sent Successfully',
-          description: `${type === 'invoice' ? 'Invoice' : 'Receipt'} has been sent to ${recipientEmail}`
+          title: '✅ Email Sent Successfully!',
+          description: `${type === 'invoice' ? 'Invoice' : 'Receipt'} has been sent to ${recipientEmail}`,
+          duration: 5000
         });
         onOpenChange(false);
         setCustomMessage('');
       } else {
         toast({
-          title: 'Email Failed',
-          description: result.error || 'Failed to send email',
-          variant: 'destructive'
+          title: '❌ Email Failed',
+          description: result.error || 'Failed to send email. Please try again.',
+          variant: 'destructive',
+          duration: 8000
         });
       }
     } catch (error) {
       console.error('Email sending error:', error);
       toast({
-        title: 'Email Error',
-        description: 'An error occurred while sending the email',
-        variant: 'destructive'
+        title: '⚠️ Email Error',
+        description: 'An unexpected error occurred while sending the email. Please try again.',
+        variant: 'destructive',
+        duration: 8000
       });
     } finally {
       setIsSending(false);
@@ -109,8 +134,8 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
                 type="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
-                placeholder="Enter recipient email"
-              />
+                placeholder="Enter recipient email" />
+
             </div>
             <div>
               <Label htmlFor="subject">Subject</Label>
@@ -118,8 +143,8 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
                 id="subject"
                 value={emailPreview.subject}
                 disabled
-                className="bg-gray-50"
-              />
+                className="bg-gray-50" />
+
             </div>
           </div>
 
@@ -131,8 +156,8 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
               placeholder="Add a personal message that will appear at the top of the email..."
-              rows={3}
-            />
+              rows={3} />
+
           </div>
 
           {/* Email Preview */}
@@ -151,17 +176,17 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
               {type === 'invoice' ? 'Invoice Details' : 'Receipt Details'}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {type === 'invoice' ? (
-                <>
+              {type === 'invoice' ?
+              <>
                   <span className="text-blue-700">Invoice Number:</span>
                   <span>{data.invoice_number}</span>
                   <span className="text-blue-700">Amount:</span>
                   <span>${data.amount.toFixed(2)}</span>
                   <span className="text-blue-700">Due Date:</span>
                   <span>{new Date(data.due_date).toLocaleDateString()}</span>
-                </>
-              ) : (
-                <>
+                </> :
+
+              <>
                   <span className="text-blue-700">Receipt Number:</span>
                   <span>RCP-{data.id}</span>
                   <span className="text-blue-700">Amount:</span>
@@ -169,7 +194,7 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
                   <span className="text-blue-700">Payment Date:</span>
                   <span>{new Date(data.payment_date).toLocaleDateString()}</span>
                 </>
-              )}
+              }
               <span className="text-blue-700">Tenant:</span>
               <span>{tenant.tenant_name}</span>
             </div>
@@ -180,31 +205,31 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isSending}
-            >
+              disabled={isSending}>
+
               Cancel
             </Button>
             <Button
               onClick={handleSendEmail}
-              disabled={isSending || !recipientEmail}
-            >
-              {isSending ? (
-                <>
+              disabled={isSending || !recipientEmail}>
+
+              {isSending ?
+              <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
-                </>
-              ) : (
-                <>
+                </> :
+
+              <>
                   <Send className="mr-2 h-4 w-4" />
                   Send Email
                 </>
-              )}
+              }
             </Button>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default EmailDialog;

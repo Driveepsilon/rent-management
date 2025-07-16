@@ -239,9 +239,9 @@ const InvoiceManagement: React.FC = () => {
   };
 
   const handleSendEmail = (invoice: Invoice) => {
-    const tenant = tenants.find(t => t.id === invoice.tenant_id);
-    const property = properties.find(p => p.id === invoice.property_id);
-    
+    const tenant = tenants.find((t) => t.id === invoice.tenant_id);
+    const property = properties.find((p) => p.id === invoice.property_id);
+
     if (!tenant) {
       toast({
         title: 'Error',
@@ -505,10 +505,10 @@ const InvoiceManagement: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendEmail(invoice)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendEmail(invoice)}>
+
                     <Mail className="h-4 w-4 mr-1" />
                     Send Email
                   </Button>
@@ -629,16 +629,16 @@ const InvoiceManagement: React.FC = () => {
       }
 
       {/* Email Dialog */}
-      {selectedInvoice && selectedTenant && selectedProperty && (
-        <EmailDialog
-          open={isEmailDialogOpen}
-          onOpenChange={setIsEmailDialogOpen}
-          type="invoice"
-          data={selectedInvoice}
-          tenant={selectedTenant}
-          property={selectedProperty}
-        />
-      )}
+      {selectedInvoice && selectedTenant && selectedProperty &&
+      <EmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        type="invoice"
+        data={selectedInvoice}
+        tenant={selectedTenant}
+        property={selectedProperty} />
+
+      }
 
       {invoices.length === 0 &&
       <Card>

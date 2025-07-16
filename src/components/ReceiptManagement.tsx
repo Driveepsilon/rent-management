@@ -114,9 +114,9 @@ const ReceiptManagement: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'pending' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'pending' }]
+
       });
       if (error) throw error;
       setInvoices(data.List || []);
@@ -136,9 +136,9 @@ const ReceiptManagement: React.FC = () => {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'user_id', op: 'Equal', value: userData.ID },
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'user_id', op: 'Equal', value: userData.ID },
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
       if (error) throw error;
       setTenants(data.List || []);
@@ -211,9 +211,9 @@ const ReceiptManagement: React.FC = () => {
   };
 
   const handleSendEmail = (payment: Payment) => {
-    const tenant = tenants.find(t => t.id === payment.tenant_id);
-    const invoice = invoices.find(i => i.id === payment.invoice_id);
-    
+    const tenant = tenants.find((t) => t.id === payment.tenant_id);
+    const invoice = invoices.find((i) => i.id === payment.invoice_id);
+
     if (!tenant) {
       toast({
         title: 'Error',
@@ -432,10 +432,10 @@ const ReceiptManagement: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendEmail(payment)}
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendEmail(payment)}>
+
                     <Mail className="h-4 w-4 mr-1" />
                     Send Email
                   </Button>
@@ -455,16 +455,16 @@ const ReceiptManagement: React.FC = () => {
       </div>
 
       {/* Email Dialog */}
-      {selectedPayment && selectedTenant && (
-        <EmailDialog
-          open={isEmailDialogOpen}
-          onOpenChange={setIsEmailDialogOpen}
-          type="receipt"
-          data={selectedPayment}
-          tenant={selectedTenant}
-          invoice={selectedInvoice}
-        />
-      )}
+      {selectedPayment && selectedTenant &&
+      <EmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        type="receipt"
+        data={selectedPayment}
+        tenant={selectedTenant}
+        invoice={selectedInvoice} />
+
+      }
 
       {payments.length === 0 &&
       <Card>
