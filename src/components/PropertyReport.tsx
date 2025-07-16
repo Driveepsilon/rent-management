@@ -88,7 +88,7 @@ const PropertyReport: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch properties",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -98,7 +98,7 @@ const PropertyReport: React.FC = () => {
       toast({
         title: "Missing Information",
         description: "Please select a property and date range",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -112,19 +112,19 @@ const PropertyReport: React.FC = () => {
         OrderByField: 'invoice_date',
         IsAsc: true,
         Filters: [
-          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-          { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
-          { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }
-        ]
+        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+        { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
+        { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }]
+
       });
 
       if (invoicesError) throw invoicesError;
       const invoices = invoicesData.List || [];
 
       // Fetch payments for those invoices
-      const invoiceIds = invoices.map(inv => inv.id);
+      const invoiceIds = invoices.map((inv) => inv.id);
       let payments: Payment[] = [];
-      
+
       if (invoiceIds.length > 0) {
         const { data: paymentsData, error: paymentsError } = await window.ezsite.apis.tablePage(26868, {
           PageNo: 1,
@@ -132,14 +132,14 @@ const PropertyReport: React.FC = () => {
           OrderByField: 'payment_date',
           IsAsc: true,
           Filters: [
-            { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
-            { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }
-          ]
+          { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
+          { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }]
+
         });
 
         if (paymentsError) throw paymentsError;
-        payments = (paymentsData.List || []).filter(payment => 
-          invoiceIds.includes(payment.invoice_id)
+        payments = (paymentsData.List || []).filter((payment) =>
+        invoiceIds.includes(payment.invoice_id)
         );
       }
 
@@ -150,10 +150,10 @@ const PropertyReport: React.FC = () => {
         OrderByField: 'expense_date',
         IsAsc: true,
         Filters: [
-          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-          { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
-          { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }
-        ]
+        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+        { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
+        { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }]
+
       });
 
       if (expensesError) throw expensesError;
@@ -161,9 +161,9 @@ const PropertyReport: React.FC = () => {
 
       // Process transactions and calculate progressive balance
       const transactions: TransactionItem[] = [];
-      
+
       // Add income transactions (payments)
-      payments.forEach(payment => {
+      payments.forEach((payment) => {
         transactions.push({
           date: payment.payment_date,
           type: 'income',
@@ -174,7 +174,7 @@ const PropertyReport: React.FC = () => {
       });
 
       // Add expense transactions
-      expenses.forEach(expense => {
+      expenses.forEach((expense) => {
         transactions.push({
           date: expense.expense_date,
           type: 'expense',
@@ -193,7 +193,7 @@ const PropertyReport: React.FC = () => {
       let totalIncome = 0;
       let totalExpenses = 0;
 
-      transactions.forEach(transaction => {
+      transactions.forEach((transaction) => {
         if (transaction.type === 'income') {
           runningBalance += transaction.amount;
           totalIncome += transaction.amount;
@@ -213,21 +213,21 @@ const PropertyReport: React.FC = () => {
 
       toast({
         title: "Report Generated",
-        description: "Property report has been generated successfully",
+        description: "Property report has been generated successfully"
       });
     } catch (error) {
       console.error('Error generating report:', error);
       toast({
         title: "Error",
         description: "Failed to generate report",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedPropertyData = properties.find(p => p.id === parseInt(selectedProperty));
+  const selectedPropertyData = properties.find((p) => p.id === parseInt(selectedProperty));
 
   return (
     <div className="space-y-6">
@@ -256,11 +256,11 @@ const PropertyReport: React.FC = () => {
                   <SelectValue placeholder="Select a property" />
                 </SelectTrigger>
                 <SelectContent>
-                  {properties.map((property) => (
-                    <SelectItem key={property.id} value={property.id.toString()}>
+                  {properties.map((property) =>
+                  <SelectItem key={property.id} value={property.id.toString()}>
                       {property.name} - {property.address}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -271,8 +271,8 @@ const PropertyReport: React.FC = () => {
                 id="description"
                 placeholder="Report description (optional)"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
+                onChange={(e) => setDescription(e.target.value)} />
+
             </div>
 
             <div className="space-y-2">
@@ -281,8 +281,8 @@ const PropertyReport: React.FC = () => {
                 id="startDate"
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+                onChange={(e) => setStartDate(e.target.value)} />
+
             </div>
 
             <div className="space-y-2">
@@ -291,24 +291,24 @@ const PropertyReport: React.FC = () => {
                 id="endDate"
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+                onChange={(e) => setEndDate(e.target.value)} />
+
             </div>
           </div>
 
-          <Button 
-            onClick={generateReport} 
+          <Button
+            onClick={generateReport}
             disabled={loading || !selectedProperty || !startDate || !endDate}
-            className="w-full"
-          >
+            className="w-full">
+
             {loading ? 'Generating Report...' : 'Generate Report'}
           </Button>
         </CardContent>
       </Card>
 
       {/* Report Summary */}
-      {reportData.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {reportData.length > 0 &&
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -354,11 +354,11 @@ const PropertyReport: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      )}
+      }
 
       {/* Report Details */}
-      {reportData.length > 0 && (
-        <Card>
+      {reportData.length > 0 &&
+      <Card>
           <CardHeader>
             <CardTitle>Financial Transactions</CardTitle>
             <CardDescription>
@@ -382,8 +382,8 @@ const PropertyReport: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.map((transaction, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                  {reportData.map((transaction, index) =>
+                <tr key={index} className="hover:bg-gray-50">
                       <td className="border border-gray-300 px-4 py-2">
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
@@ -399,26 +399,26 @@ const PropertyReport: React.FC = () => {
                         {transaction.category || '-'}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-medium ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                  transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`
+                  }>
                         {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString()}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-bold ${
-                        transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                  transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'}`
+                  }>
                         ${transaction.balance.toLocaleString()}
                       </td>
                     </tr>
-                  ))}
+                )}
                 </tbody>
               </table>
             </div>
           </CardContent>
         </Card>
-      )}
+      }
 
-      {reportData.length === 0 && selectedProperty && startDate && endDate && !loading && (
-        <Card>
+      {reportData.length === 0 && selectedProperty && startDate && endDate && !loading &&
+      <Card>
           <CardContent className="py-12 text-center">
             <CalendarDays className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="text-lg font-semibold mb-2">No Data Found</h3>
@@ -427,9 +427,9 @@ const PropertyReport: React.FC = () => {
             </p>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default PropertyReport;

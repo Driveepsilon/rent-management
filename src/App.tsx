@@ -12,6 +12,7 @@ import LeaseAgreements from '@/components/LeaseAgreements';
 import EmailHistory from '@/components/EmailHistory';
 import ExpenseManagement from '@/components/ExpenseManagement';
 import PropertyReport from '@/components/PropertyReport';
+import OwnerManagement from '@/components/OwnerManagement';
 import LoginForm from '@/components/LoginForm';
 import RegisterForm from '@/components/RegisterForm';
 import NotFound from './pages/NotFound';
@@ -35,6 +36,7 @@ const App = () =>
           <Route path="/expenses" element={<Layout><ExpenseManagement /></Layout>} />
           <Route path="/reports" element={<Layout><PropertyReport /></Layout>} />
           <Route path="/email-history" element={<Layout><EmailHistory /></Layout>} />
+          <Route path="/owners" element={<Layout><OwnerManagement /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Mail,
-  BarChart3 } from
+  BarChart3,
+  UserCheck } from
 'lucide-react';
 
 interface LayoutProps {
@@ -30,6 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/tenants', label: 'Tenants', icon: Users },
   { href: '/properties', label: 'Properties', icon: Building },
+  { href: '/owners', label: 'Owners', icon: UserCheck },
   { href: '/leases', label: 'Lease Agreements', icon: FileCheck },
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/receipts', label: 'Receipts', icon: Receipt },
