@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarDays, TrendingUp, TrendingDown, BarChart3, FileText, DollarSign, Mail, Send, Loader2 } from 'lucide-react';
+import { CalendarDays, TrendingUp, TrendingDown, BarChart3, FileText, DollarSign, Mail, Send, Loader2, Download } from 'lucide-react';
+import { pdfGenerator } from '@/utils/pdfGenerator';
 
 interface Property {
   id: number;
@@ -61,7 +61,7 @@ interface TransactionItem {
   balance: number;
 }
 
-const PropertyReport: React.FC = () => {
+const PropertyReportWithPDF: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
@@ -151,10 +151,10 @@ const PropertyReport: React.FC = () => {
         OrderByField: 'invoice_date',
         IsAsc: true,
         Filters: [
-        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-        { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
-        { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }]
-
+          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+          { name: 'invoice_date', op: 'GreaterThanOrEqual', value: startDate },
+          { name: 'invoice_date', op: 'LessThanOrEqual', value: endDate }
+        ]
       });
 
       if (invoicesError) throw invoicesError;
@@ -171,14 +171,14 @@ const PropertyReport: React.FC = () => {
           OrderByField: 'payment_date',
           IsAsc: true,
           Filters: [
-          { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
-          { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }]
-
+            { name: 'payment_date', op: 'GreaterThanOrEqual', value: startDate },
+            { name: 'payment_date', op: 'LessThanOrEqual', value: endDate }
+          ]
         });
 
         if (paymentsError) throw paymentsError;
         payments = (paymentsData.List || []).filter((payment) =>
-        invoiceIds.includes(payment.invoice_id)
+          invoiceIds.includes(payment.invoice_id)
         );
       }
 
@@ -189,10 +189,10 @@ const PropertyReport: React.FC = () => {
         OrderByField: 'expense_date',
         IsAsc: true,
         Filters: [
-        { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
-        { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
-        { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }]
-
+          { name: 'property_id', op: 'Equal', value: parseInt(selectedProperty) },
+          { name: 'expense_date', op: 'GreaterThanOrEqual', value: startDate },
+          { name: 'expense_date', op: 'LessThanOrEqual', value: endDate }
+        ]
       });
 
       if (expensesError) throw expensesError;
@@ -263,6 +263,50 @@ const PropertyReport: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!selectedProperty || reportData.length === 0) {
+      toast({
+        title: "No Report Data",
+        description: "Please generate a report first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const selectedPropertyData = properties.find(p => p.id === parseInt(selectedProperty));
+    if (!selectedPropertyData) {
+      toast({
+        title: "Error",
+        description: "Selected property not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      pdfGenerator.generateReportPDF(
+        reportData,
+        totals,
+        selectedPropertyData,
+        startDate,
+        endDate,
+        description
+      );
+      
+      toast({
+        title: "PDF Downloaded",
+        description: "Property report PDF has been downloaded successfully"
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive"
+      });
     }
   };
 
@@ -401,49 +445,6 @@ const PropertyReport: React.FC = () => {
         .expense { color: #ef4444; }
         .balance.positive { color: #10b981; }
         .balance.negative { color: #ef4444; }
-        .transactions-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-        }
-        .transactions-table th {
-            background-color: #4f46e5;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-            border: 1px solid #4f46e5;
-        }
-        .transactions-table td {
-            padding: 12px;
-            border: 1px solid #e5e7eb;
-        }
-        .transactions-table tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-        .transactions-table tr:hover {
-            background-color: #f1f5f9;
-        }
-        .transaction-type {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .transaction-income {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-        .transaction-expense {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-        .amount-cell {
-            text-align: right;
-            font-weight: bold;
-        }
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -455,21 +456,6 @@ const PropertyReport: React.FC = () => {
             margin-top: 20px;
             font-weight: bold;
             color: #4f46e5;
-        }
-        @media (max-width: 600px) {
-            .summary-cards {
-                grid-template-columns: 1fr;
-            }
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            .transactions-table {
-                font-size: 12px;
-            }
-            .transactions-table th,
-            .transactions-table td {
-                padding: 8px;
-            }
         }
     </style>
 </head>
@@ -519,41 +505,6 @@ const PropertyReport: React.FC = () => {
                     </p>
                 </div>
             </div>
-        </div>
-
-        <div>
-            <h2>Detailed Transactions</h2>
-            <table class="transactions-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Category</th>
-                        <th>Amount</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${reportData.map((transaction) => `
-                    <tr>
-                        <td>${new Date(transaction.date).toLocaleDateString()}</td>
-                        <td>
-                            <span class="transaction-type transaction-${transaction.type}">
-                                ${transaction.type === 'income' ? 'Income' : 'Expense'}
-                            </span>
-                        </td>
-                        <td>${transaction.description}</td>
-                        <td>${transaction.category || '-'}</td>
-                        <td class="amount-cell ${transaction.type === 'income' ? 'income' : 'expense'}">
-                            ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toLocaleString()}
-                        </td>
-                        <td class="amount-cell balance ${transaction.balance >= 0 ? 'positive' : 'negative'}">
-                            $${transaction.balance.toLocaleString()}
-                        </td>
-                    </tr>`).join('')}
-                </tbody>
-            </table>
         </div>
 
         <div class="footer">
@@ -657,7 +608,7 @@ const PropertyReport: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {properties.map((property) =>
-                  <SelectItem key={property.id} value={property.id.toString()}>
+                    <SelectItem key={property.id} value={property.id.toString()}>
                       {property.name} - {property.address}
                     </SelectItem>
                   )}
@@ -671,8 +622,8 @@ const PropertyReport: React.FC = () => {
                 id="description"
                 placeholder="Report description (optional)"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)} />
-
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -681,8 +632,8 @@ const PropertyReport: React.FC = () => {
                 id="startDate"
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)} />
-
+                onChange={(e) => setStartDate(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -691,8 +642,8 @@ const PropertyReport: React.FC = () => {
                 id="endDate"
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)} />
-
+                onChange={(e) => setEndDate(e.target.value)}
+              />
             </div>
           </div>
 
@@ -700,16 +651,27 @@ const PropertyReport: React.FC = () => {
             <Button
               onClick={generateReport}
               disabled={loading || !selectedProperty || !startDate || !endDate}
-              className="flex-1">
-
+              className="flex-1"
+            >
               {loading ? 'Generating Report...' : 'Generate Report'}
+            </Button>
+            
+            <Button
+              onClick={handleDownloadPDF}
+              disabled={!selectedProperty || reportData.length === 0}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download PDF
             </Button>
             
             <Button
               onClick={handleEmailReport}
               disabled={!selectedProperty || reportData.length === 0}
               variant="outline"
-              className="flex items-center gap-2">
+              className="flex items-center gap-2"
+            >
               <Mail className="w-4 h-4" />
               Email Report
             </Button>
@@ -719,7 +681,7 @@ const PropertyReport: React.FC = () => {
 
       {/* Owner Information */}
       {selectedProperty && propertyOwner &&
-      <Card>
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
@@ -747,7 +709,7 @@ const PropertyReport: React.FC = () => {
 
       {/* Report Summary */}
       {reportData.length > 0 &&
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -797,7 +759,7 @@ const PropertyReport: React.FC = () => {
 
       {/* Report Details */}
       {reportData.length > 0 &&
-      <Card>
+        <Card>
           <CardHeader>
             <CardTitle>Financial Transactions</CardTitle>
             <CardDescription>
@@ -822,7 +784,7 @@ const PropertyReport: React.FC = () => {
                 </thead>
                 <tbody>
                   {reportData.map((transaction, index) =>
-                <tr key={index} className="hover:bg-gray-50">
+                    <tr key={index} className="hover:bg-gray-50">
                       <td className="border border-gray-300 px-4 py-2">
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
@@ -838,17 +800,17 @@ const PropertyReport: React.FC = () => {
                         {transaction.category || '-'}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-medium ${
-                  transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`
-                  }>
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`
+                      }>
                         {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString()}
                       </td>
                       <td className={`border border-gray-300 px-4 py-2 text-right font-bold ${
-                  transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'}`
-                  }>
+                        transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'}`
+                      }>
                         ${transaction.balance.toLocaleString()}
                       </td>
                     </tr>
-                )}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -857,7 +819,7 @@ const PropertyReport: React.FC = () => {
       }
 
       {reportData.length === 0 && selectedProperty && startDate && endDate && !loading &&
-      <Card>
+        <Card>
           <CardContent className="py-12 text-center">
             <CalendarDays className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="text-lg font-semibold mb-2">No Data Found</h3>
@@ -888,7 +850,8 @@ const PropertyReport: React.FC = () => {
                   type="email"
                   value={emailData.recipientEmail}
                   onChange={(e) => setEmailData({ ...emailData, recipientEmail: e.target.value })}
-                  placeholder="Enter recipient email" />
+                  placeholder="Enter recipient email"
+                />
               </div>
               <div>
                 <Label htmlFor="subject">Subject</Label>
@@ -896,7 +859,8 @@ const PropertyReport: React.FC = () => {
                   id="subject"
                   value={generateEmailContent().subject}
                   disabled
-                  className="bg-gray-50" />
+                  className="bg-gray-50"
+                />
               </div>
             </div>
 
@@ -908,38 +872,8 @@ const PropertyReport: React.FC = () => {
                 value={emailData.customMessage}
                 onChange={(e) => setEmailData({ ...emailData, customMessage: e.target.value })}
                 placeholder="Add a personal message that will appear at the top of the email..."
-                rows={3} />
-            </div>
-
-            {/* Email Preview */}
-            <div>
-              <Label>Email Preview</Label>
-              <div className="bg-gray-50 p-4 rounded-lg border max-h-96 overflow-y-auto">
-                <div
-                  className="text-sm"
-                  dangerouslySetInnerHTML={{ __html: generateEmailContent().body }}
-                  style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%' }} />
-
-              </div>
-            </div>
-
-            {/* Report Summary */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">Report Summary</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <span className="text-blue-700">Property:</span>
-                <span>{selectedPropertyData?.name}</span>
-                <span className="text-blue-700">Period:</span>
-                <span>{new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}</span>
-                <span className="text-blue-700">Total Income:</span>
-                <span>${totals.totalIncome.toLocaleString()}</span>
-                <span className="text-blue-700">Total Expenses:</span>
-                <span>${totals.totalExpenses.toLocaleString()}</span>
-                <span className="text-blue-700">Net Balance:</span>
-                <span className={totals.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  ${totals.netBalance.toLocaleString()}
-                </span>
-              </div>
+                rows={3}
+              />
             </div>
 
             {/* Actions */}
@@ -947,18 +881,20 @@ const PropertyReport: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => setEmailDialog(false)}
-                disabled={sendingEmail}>
+                disabled={sendingEmail}
+              >
                 Cancel
               </Button>
               <Button
                 onClick={sendEmailReport}
-                disabled={sendingEmail || !emailData.recipientEmail}>
+                disabled={sendingEmail || !emailData.recipientEmail}
+              >
                 {sendingEmail ?
-                <>
+                  <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...
                   </> :
-                <>
+                  <>
                     <Send className="mr-2 h-4 w-4" />
                     Send Email
                   </>
@@ -968,8 +904,8 @@ const PropertyReport: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 };
 
-export default PropertyReport;
+export default PropertyReportWithPDF;
