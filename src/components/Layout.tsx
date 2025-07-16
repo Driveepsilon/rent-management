@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Home, 
-  Users, 
-  Building, 
-  FileText, 
-  Receipt, 
-  FileCheck, 
-  TrendingUp, 
+import {
+  Home,
+  Users,
+  Building,
+  FileText,
+  Receipt,
+  FileCheck,
+  TrendingUp,
   BarChart3,
   UserCheck,
   Settings,
@@ -20,18 +20,18 @@ import {
   Globe,
   DollarSign,
   Calendar,
-  Building2
-} from 'lucide-react';
+  Building2 } from
+'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue } from
+'@/components/ui/select';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -49,19 +49,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { currency, setCurrency } = useCurrency();
 
   const navigationItems = [
-    { path: '/', icon: Home, label: t('navigation.dashboard') },
-    { path: '/tenants', icon: Users, label: t('navigation.tenants') },
-    { path: '/properties', icon: Building, label: t('navigation.properties') },
-    { path: '/invoices', icon: FileText, label: t('navigation.invoices') },
-    { path: '/receipts', icon: Receipt, label: t('navigation.receipts') },
-    { path: '/leases', icon: FileCheck, label: t('navigation.leases') },
-    { path: '/expenses', icon: TrendingUp, label: t('navigation.expenses') },
-    { path: '/reports', icon: BarChart3, label: t('navigation.reports') },
-    { path: '/owners', icon: UserCheck, label: t('navigation.owners') },
-    { path: '/trustee-fees', icon: Building2, label: t('navigation.trusteeFees') },
-    { path: '/periodic-invoices', icon: Calendar, label: t('navigation.periodicInvoices') },
-    { path: '/notifications', icon: Bell, label: t('navigation.notifications') },
-  ];
+  { path: '/', icon: Home, label: t('navigation.dashboard') },
+  { path: '/tenants', icon: Users, label: t('navigation.tenants') },
+  { path: '/properties', icon: Building, label: t('navigation.properties') },
+  { path: '/invoices', icon: FileText, label: t('navigation.invoices') },
+  { path: '/receipts', icon: Receipt, label: t('navigation.receipts') },
+  { path: '/leases', icon: FileCheck, label: t('navigation.leases') },
+  { path: '/expenses', icon: TrendingUp, label: t('navigation.expenses') },
+  { path: '/reports', icon: BarChart3, label: t('navigation.reports') },
+  { path: '/owners', icon: UserCheck, label: t('navigation.owners') },
+  { path: '/trustee-fees', icon: Building2, label: t('navigation.trusteeFees') },
+  { path: '/periodic-invoices', icon: Calendar, label: t('navigation.periodicInvoices') },
+  { path: '/notifications', icon: Bell, label: t('navigation.notifications') }];
+
 
   useEffect(() => {
     checkAuth();
@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const loadNotifications = async () => {
     if (!user?.ID) return;
-    
+
     try {
       const { data, error } = await window.ezsite.apis.tablePage(28877, {
         PageNo: 1,
@@ -97,17 +97,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         OrderByField: 'created_date',
         IsAsc: false,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          },
-          {
-            name: 'is_read',
-            op: 'Equal',
-            value: false
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        },
+        {
+          name: 'is_read',
+          op: 'Equal',
+          value: false
+        }]
+
       });
 
       if (!error && data) {
@@ -125,13 +125,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       navigate('/login');
       toast({
         title: t('common.success'),
-        description: 'Logged out successfully',
+        description: 'Logged out successfully'
       });
     } catch (error) {
       toast({
         title: t('common.error'),
         description: 'Failed to logout',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -144,7 +144,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       });
 
       if (!error) {
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -155,8 +155,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-lg">{t('common.loading')}</div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!user) {
@@ -173,8 +173,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             variant="ghost"
             size="sm"
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden"
-          >
+            className="lg:hidden">
+
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -184,22 +184,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
+                  isActive ?
+                  'bg-blue-100 text-blue-700' :
+                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`
+                  }
+                  onClick={() => setIsSidebarOpen(false)}>
+
                   <Icon className="mr-3 h-5 w-5" />
                   {item.label}
-                </Link>
-              );
+                </Link>);
+
             })}
           </div>
         </nav>
@@ -215,8 +215,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden"
-              >
+                className="lg:hidden">
+
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
@@ -251,35 +251,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="relative">
                 <Button variant="ghost" size="sm" onClick={loadNotifications}>
                   <Bell className="h-5 w-5" />
-                  {notifications.length > 0 && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
+                  {notifications.length > 0 &&
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
                       {notifications.length}
                     </Badge>
-                  )}
+                  }
                 </Button>
                 
-                {notifications.length > 0 && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border max-h-96 overflow-y-auto z-50">
+                {notifications.length > 0 &&
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border max-h-96 overflow-y-auto z-50">
                     <div className="p-3 border-b">
                       <h3 className="font-medium text-sm">{t('notifications.title')}</h3>
                     </div>
                     <div className="max-h-64 overflow-y-auto">
-                      {notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className="p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
-                          onClick={() => markNotificationAsRead(notification.id)}
-                        >
+                      {notifications.map((notification) =>
+                    <div
+                      key={notification.id}
+                      className="p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => markNotificationAsRead(notification.id)}>
+
                           <div className="font-medium text-sm">{notification.title}</div>
                           <div className="text-xs text-gray-500 mt-1">{notification.message}</div>
                           <div className="text-xs text-gray-400 mt-1">
                             {new Date(notification.created_date).toLocaleDateString()}
                           </div>
                         </div>
-                      ))}
+                    )}
                     </div>
                   </div>
-                )}
+                }
               </div>
 
               {/* User Menu */}
@@ -302,14 +302,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-    </div>
-  );
+      {isSidebarOpen &&
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        onClick={() => setIsSidebarOpen(false)} />
+
+      }
+    </div>);
+
 };
 
 export default Layout;

@@ -55,12 +55,12 @@ const NotificationCenter: React.FC = () => {
         OrderByField: 'created_date',
         IsAsc: false,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -79,12 +79,12 @@ const NotificationCenter: React.FC = () => {
       });
 
       if (!error) {
-        setNotifications(prev => 
-          prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+        setNotifications((prev) =>
+        prev.map((n) => n.id === notificationId ? { ...n, is_read: true } : n)
         );
         toast({
           title: t('common.success'),
-          description: t('notifications.markAsRead'),
+          description: t('notifications.markAsRead')
         });
       }
     } catch (error) {
@@ -94,8 +94,8 @@ const NotificationCenter: React.FC = () => {
 
   const markAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => !n.is_read);
-      
+      const unreadNotifications = notifications.filter((n) => !n.is_read);
+
       for (const notification of unreadNotifications) {
         await window.ezsite.apis.tableUpdate(28877, {
           id: notification.id,
@@ -103,10 +103,10 @@ const NotificationCenter: React.FC = () => {
         });
       }
 
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       toast({
         title: t('common.success'),
-        description: t('notifications.markAllAsRead'),
+        description: t('notifications.markAllAsRead')
       });
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -118,10 +118,10 @@ const NotificationCenter: React.FC = () => {
       const { error } = await window.ezsite.apis.tableDelete(28877, { id: notificationId });
 
       if (!error) {
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
         toast({
           title: t('common.success'),
-          description: 'Notification deleted successfully',
+          description: 'Notification deleted successfully'
         });
       }
     } catch (error) {
@@ -165,36 +165,36 @@ const NotificationCenter: React.FC = () => {
     return <div className="flex justify-center items-center h-64">{t('common.loading')}</div>;
   }
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
-          {unreadCount > 0 && (
-            <Badge variant="destructive">{unreadCount} unread</Badge>
-          )}
+          {unreadCount > 0 &&
+          <Badge variant="destructive">{unreadCount} unread</Badge>
+          }
         </div>
-        {unreadCount > 0 && (
-          <Button onClick={markAllAsRead} variant="outline">
+        {unreadCount > 0 &&
+        <Button onClick={markAllAsRead} variant="outline">
             <Check className="h-4 w-4 mr-2" />
             {t('notifications.markAllAsRead')}
           </Button>
-        )}
+        }
       </div>
 
       <div className="space-y-4">
-        {notifications.length === 0 ? (
-          <Card>
+        {notifications.length === 0 ?
+        <Card>
             <CardContent className="py-8 text-center">
               <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">{t('notifications.noNotifications')}</p>
             </CardContent>
-          </Card>
-        ) : (
-          notifications.map((notification) => (
-            <Card key={notification.id} className={`${!notification.is_read ? 'border-blue-200 bg-blue-50' : ''}`}>
+          </Card> :
+
+        notifications.map((notification) =>
+        <Card key={notification.id} className={`${!notification.is_read ? 'border-blue-200 bg-blue-50' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3">
@@ -204,9 +204,9 @@ const NotificationCenter: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <h3 className="font-semibold text-sm">{notification.title}</h3>
-                        {!notification.is_read && (
-                          <Badge variant="secondary" className="text-xs">New</Badge>
-                        )}
+                        {!notification.is_read &&
+                    <Badge variant="secondary" className="text-xs">New</Badge>
+                    }
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
@@ -217,31 +217,31 @@ const NotificationCenter: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {!notification.is_read && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => markAsRead(notification.id)}
-                      >
+                    {!notification.is_read &&
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => markAsRead(notification.id)}>
+
                         <Check className="h-4 w-4" />
                       </Button>
-                    )}
+                }
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteNotification(notification.id)}
-                    >
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteNotification(notification.id)}>
+
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
+        )
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NotificationCenter;

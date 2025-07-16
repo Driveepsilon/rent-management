@@ -14,13 +14,13 @@ interface EmailData {
 }
 
 export const sendEmailWithPDF = async (
-  emailData: EmailData,
-  pdfData?: {
-    type: 'invoice' | 'receipt' | 'report';
-    data: any;
-    filename: string;
-  }
-): Promise<{ error?: string }> => {
+emailData: EmailData,
+pdfData?: {
+  type: 'invoice' | 'receipt' | 'report';
+  data: any;
+  filename: string;
+})
+: Promise<{error?: string;}> => {
   try {
     let finalEmailData = { ...emailData };
 
@@ -28,15 +28,15 @@ export const sendEmailWithPDF = async (
     if (pdfData) {
       const pdfBlob = await generateInvoicePDF(pdfData.data);
       const pdfBase64 = await blobToBase64(pdfBlob);
-      
+
       finalEmailData.attachments = [
-        ...(emailData.attachments || []),
-        {
-          filename: pdfData.filename,
-          content: pdfBase64,
-          encoding: 'base64'
-        }
-      ];
+      ...(emailData.attachments || []),
+      {
+        filename: pdfData.filename,
+        content: pdfBase64,
+        encoding: 'base64'
+      }];
+
     }
 
     const { error } = await window.ezsite.apis.sendEmail({
@@ -74,15 +74,15 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 export const logEmail = async (
-  userId: number,
-  tenantId: number,
-  emailType: string,
-  recipientEmail: string,
-  subject: string,
-  message: string,
-  invoiceId?: number,
-  paymentId?: number
-): Promise<{ error?: string }> => {
+userId: number,
+tenantId: number,
+emailType: string,
+recipientEmail: string,
+subject: string,
+message: string,
+invoiceId?: number,
+paymentId?: number)
+: Promise<{error?: string;}> => {
   try {
     const { error } = await window.ezsite.apis.tableCreate(27120, {
       user_id: userId,

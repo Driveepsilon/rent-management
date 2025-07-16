@@ -70,7 +70,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'rent' | 'trustee-fees'>('rent');
-  
+
   const { toast } = useToast();
   const { t } = useLanguage();
   const { currency, formatCurrency } = useCurrency();
@@ -96,10 +96,10 @@ const PeriodicInvoicesManagement: React.FC = () => {
   });
 
   const periodicityOptions = [
-    { value: 'monthly', label: t('periodicInvoices.monthly') },
-    { value: 'quarterly', label: t('periodicInvoices.quarterly') },
-    { value: '2_months', label: t('periodicInvoices.bimonthly') }
-  ];
+  { value: 'monthly', label: t('periodicInvoices.monthly') },
+  { value: 'quarterly', label: t('periodicInvoices.quarterly') },
+  { value: '2_months', label: t('periodicInvoices.bimonthly') }];
+
 
   useEffect(() => {
     loadUser();
@@ -136,12 +136,12 @@ const PeriodicInvoicesManagement: React.FC = () => {
         OrderByField: 'next_generation_date',
         IsAsc: true,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -160,12 +160,12 @@ const PeriodicInvoicesManagement: React.FC = () => {
         OrderByField: 'next_generation_date',
         IsAsc: true,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -184,12 +184,12 @@ const PeriodicInvoicesManagement: React.FC = () => {
         OrderByField: 'tenant_name',
         IsAsc: true,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -208,12 +208,12 @@ const PeriodicInvoicesManagement: React.FC = () => {
         OrderByField: 'owner_name',
         IsAsc: true,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -232,12 +232,12 @@ const PeriodicInvoicesManagement: React.FC = () => {
         OrderByField: 'name',
         IsAsc: true,
         Filters: [
-          {
-            name: 'user_id',
-            op: 'Equal',
-            value: user.ID
-          }
-        ]
+        {
+          name: 'user_id',
+          op: 'Equal',
+          value: user.ID
+        }]
+
       });
 
       if (!error && data) {
@@ -252,9 +252,9 @@ const PeriodicInvoicesManagement: React.FC = () => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
+
     let nextDate = new Date(currentYear, currentMonth, day);
-    
+
     // If the day has passed this month, move to next period
     if (nextDate <= now) {
       switch (periodicity) {
@@ -269,14 +269,14 @@ const PeriodicInvoicesManagement: React.FC = () => {
           break;
       }
     }
-    
+
     return nextDate.toISOString();
   };
 
   const saveRentInvoice = async () => {
     try {
       const nextGenerationDate = calculateNextGenerationDate(rentForm.periodicity, rentForm.generation_day);
-      
+
       const invoiceData = {
         ...rentForm,
         user_id: user.ID,
@@ -303,7 +303,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
         user_id: user.ID,
         notification_type: 'periodic_rent_setup',
         title: 'Periodic Rent Invoice Created',
-        message: `Periodic rent invoice for ${properties.find(p => p.id === rentForm.property_id)?.name} has been set up`,
+        message: `Periodic rent invoice for ${properties.find((p) => p.id === rentForm.property_id)?.name} has been set up`,
         reference_id: selectedRentInvoice?.id || 0,
         reference_type: 'periodic_rent_invoice',
         is_read: false,
@@ -312,7 +312,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: selectedRentInvoice ? 'Periodic rent invoice updated successfully' : 'Periodic rent invoice created successfully',
+        description: selectedRentInvoice ? 'Periodic rent invoice updated successfully' : 'Periodic rent invoice created successfully'
       });
 
       setIsRentDialogOpen(false);
@@ -323,7 +323,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
       toast({
         title: t('common.error'),
         description: error.message || 'Failed to save periodic rent invoice',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -331,7 +331,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
   const saveTrusteeFeesInvoice = async () => {
     try {
       const nextGenerationDate = calculateNextGenerationDate(trusteeFeesForm.periodicity, trusteeFeesForm.generation_day);
-      
+
       const invoiceData = {
         ...trusteeFeesForm,
         user_id: user.ID,
@@ -358,7 +358,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
         user_id: user.ID,
         notification_type: 'periodic_trustee_fees_setup',
         title: 'Periodic Trustee Fees Invoice Created',
-        message: `Periodic trustee fees invoice for ${properties.find(p => p.id === trusteeFeesForm.property_id)?.name} has been set up`,
+        message: `Periodic trustee fees invoice for ${properties.find((p) => p.id === trusteeFeesForm.property_id)?.name} has been set up`,
         reference_id: selectedTrusteeFeesInvoice?.id || 0,
         reference_type: 'periodic_trustee_fees_invoice',
         is_read: false,
@@ -367,7 +367,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: selectedTrusteeFeesInvoice ? 'Periodic trustee fees invoice updated successfully' : 'Periodic trustee fees invoice created successfully',
+        description: selectedTrusteeFeesInvoice ? 'Periodic trustee fees invoice updated successfully' : 'Periodic trustee fees invoice created successfully'
       });
 
       setIsTrusteeFeesDialogOpen(false);
@@ -378,7 +378,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
       toast({
         title: t('common.error'),
         description: error.message || 'Failed to save periodic trustee fees invoice',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -393,7 +393,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: 'Periodic rent invoice deleted successfully',
+        description: 'Periodic rent invoice deleted successfully'
       });
 
       loadRentInvoices();
@@ -401,7 +401,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
       toast({
         title: t('common.error'),
         description: error.message || 'Failed to delete periodic rent invoice',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -416,7 +416,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: 'Periodic trustee fees invoice deleted successfully',
+        description: 'Periodic trustee fees invoice deleted successfully'
       });
 
       loadTrusteeFeesInvoices();
@@ -424,7 +424,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
       toast({
         title: t('common.error'),
         description: error.message || 'Failed to delete periodic trustee fees invoice',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -482,9 +482,9 @@ const PeriodicInvoicesManagement: React.FC = () => {
   };
 
   const handlePropertySelect = (propertyId: number) => {
-    const property = properties.find(p => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     if (property && activeTab === 'rent') {
-      setRentForm(prev => ({
+      setRentForm((prev) => ({
         ...prev,
         property_id: propertyId,
         rent_amount: property.monthly_rent,
@@ -504,31 +504,31 @@ const PeriodicInvoicesManagement: React.FC = () => {
         <div className="flex space-x-2">
           <Button
             variant={activeTab === 'rent' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('rent')}
-          >
+            onClick={() => setActiveTab('rent')}>
+
             <Users className="h-4 w-4 mr-2" />
             {t('periodicInvoices.rentInvoices')}
           </Button>
           <Button
             variant={activeTab === 'trustee-fees' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('trustee-fees')}
-          >
+            onClick={() => setActiveTab('trustee-fees')}>
+
             <Building2 className="h-4 w-4 mr-2" />
             {t('periodicInvoices.trusteeFeesInvoices')}
           </Button>
         </div>
       </div>
 
-      {activeTab === 'rent' && (
-        <div>
+      {activeTab === 'rent' &&
+      <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">{t('periodicInvoices.rentInvoices')}</h2>
             <Dialog open={isRentDialogOpen} onOpenChange={setIsRentDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => {
-                  setSelectedRentInvoice(null);
-                  resetRentForm();
-                }}>
+                setSelectedRentInvoice(null);
+                resetRentForm();
+              }}>
                   <Plus className="h-4 w-4 mr-2" />
                   {t('periodicInvoices.addPeriodicRent')}
                 </Button>
@@ -543,16 +543,16 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="tenant">Tenant</Label>
-                      <Select value={rentForm.tenant_id.toString()} onValueChange={(value) => setRentForm(prev => ({ ...prev, tenant_id: parseInt(value) }))}>
+                      <Select value={rentForm.tenant_id.toString()} onValueChange={(value) => setRentForm((prev) => ({ ...prev, tenant_id: parseInt(value) }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select tenant" />
                         </SelectTrigger>
                         <SelectContent>
-                          {tenants.map((tenant) => (
-                            <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                          {tenants.map((tenant) =>
+                        <SelectItem key={tenant.id} value={tenant.id.toString()}>
                               {tenant.tenant_name}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -563,11 +563,11 @@ const PeriodicInvoicesManagement: React.FC = () => {
                           <SelectValue placeholder="Select property" />
                         </SelectTrigger>
                         <SelectContent>
-                          {properties.map((property) => (
-                            <SelectItem key={property.id} value={property.id.toString()}>
+                          {properties.map((property) =>
+                        <SelectItem key={property.id} value={property.id.toString()}>
                               {property.name}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -575,33 +575,33 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="periodicity">{t('periodicInvoices.periodicity')}</Label>
-                      <Select value={rentForm.periodicity} onValueChange={(value) => setRentForm(prev => ({ ...prev, periodicity: value }))}>
+                      <Select value={rentForm.periodicity} onValueChange={(value) => setRentForm((prev) => ({ ...prev, periodicity: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {periodicityOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                          {periodicityOptions.map((option) =>
+                        <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="generationDay">{t('periodicInvoices.generationDay')}</Label>
                       <Input
-                        id="generationDay"
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={rentForm.generation_day}
-                        onChange={(e) => setRentForm(prev => ({ ...prev, generation_day: parseInt(e.target.value) || 1 }))}
-                      />
+                      id="generationDay"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={rentForm.generation_day}
+                      onChange={(e) => setRentForm((prev) => ({ ...prev, generation_day: parseInt(e.target.value) || 1 }))} />
+
                     </div>
                     <div>
                       <Label htmlFor="currency">{t('common.currency')}</Label>
-                      <Select value={rentForm.currency} onValueChange={(value) => setRentForm(prev => ({ ...prev, currency: value }))}>
+                      <Select value={rentForm.currency} onValueChange={(value) => setRentForm((prev) => ({ ...prev, currency: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -616,20 +616,20 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div>
                     <Label htmlFor="rentAmount">Rent Amount</Label>
                     <Input
-                      id="rentAmount"
-                      type="number"
-                      value={rentForm.rent_amount}
-                      onChange={(e) => setRentForm(prev => ({ ...prev, rent_amount: parseFloat(e.target.value) || 0 }))}
-                      placeholder="0.00"
-                    />
+                    id="rentAmount"
+                    type="number"
+                    value={rentForm.rent_amount}
+                    onChange={(e) => setRentForm((prev) => ({ ...prev, rent_amount: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.00" />
+
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
-                      type="checkbox"
-                      id="isActive"
-                      checked={rentForm.is_active}
-                      onChange={(e) => setRentForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                    />
+                    type="checkbox"
+                    id="isActive"
+                    checked={rentForm.is_active}
+                    onChange={(e) => setRentForm((prev) => ({ ...prev, is_active: e.target.checked }))} />
+
                     <Label htmlFor="isActive">{t('periodicInvoices.isActive')}</Label>
                   </div>
                   <div className="flex justify-end space-x-2">
@@ -647,11 +647,11 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
           <div className="grid gap-4">
             {rentInvoices.map((invoice) => {
-              const tenant = tenants.find(t => t.id === invoice.tenant_id);
-              const property = properties.find(p => p.id === invoice.property_id);
+            const tenant = tenants.find((t) => t.id === invoice.tenant_id);
+            const property = properties.find((p) => p.id === invoice.property_id);
 
-              return (
-                <Card key={invoice.id}>
+            return (
+              <Card key={invoice.id}>
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -661,7 +661,7 @@ const PeriodicInvoicesManagement: React.FC = () => {
                           {t('common.amount')}: {formatCurrency(invoice.rent_amount, invoice.currency as any)}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {t('periodicInvoices.periodicity')}: {periodicityOptions.find(p => p.value === invoice.periodicity)?.label}
+                          {t('periodicInvoices.periodicity')}: {periodicityOptions.find((p) => p.value === invoice.periodicity)?.label}
                         </p>
                         <p className="text-sm text-gray-600">
                           {t('periodicInvoices.nextGeneration')}: {new Date(invoice.next_generation_date).toLocaleDateString()}
@@ -677,39 +677,39 @@ const PeriodicInvoicesManagement: React.FC = () => {
                       </div>
                       <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editRentInvoice(invoice)}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editRentInvoice(invoice)}>
+
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteRentInvoice(invoice.id)}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteRentInvoice(invoice.id)}>
+
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>);
+
+          })}
           </div>
         </div>
-      )}
+      }
 
-      {activeTab === 'trustee-fees' && (
-        <div>
+      {activeTab === 'trustee-fees' &&
+      <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">{t('periodicInvoices.trusteeFeesInvoices')}</h2>
             <Dialog open={isTrusteeFeesDialogOpen} onOpenChange={setIsTrusteeFeesDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => {
-                  setSelectedTrusteeFeesInvoice(null);
-                  resetTrusteeFeesForm();
-                }}>
+                setSelectedTrusteeFeesInvoice(null);
+                resetTrusteeFeesForm();
+              }}>
                   <Plus className="h-4 w-4 mr-2" />
                   {t('periodicInvoices.addPeriodicTrusteeFees')}
                 </Button>
@@ -724,31 +724,31 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="owner">Owner</Label>
-                      <Select value={trusteeFeesForm.owner_id.toString()} onValueChange={(value) => setTrusteeFeesForm(prev => ({ ...prev, owner_id: parseInt(value) }))}>
+                      <Select value={trusteeFeesForm.owner_id.toString()} onValueChange={(value) => setTrusteeFeesForm((prev) => ({ ...prev, owner_id: parseInt(value) }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select owner" />
                         </SelectTrigger>
                         <SelectContent>
-                          {owners.map((owner) => (
-                            <SelectItem key={owner.id} value={owner.id.toString()}>
+                          {owners.map((owner) =>
+                        <SelectItem key={owner.id} value={owner.id.toString()}>
                               {owner.owner_name}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="property">Property</Label>
-                      <Select value={trusteeFeesForm.property_id.toString()} onValueChange={(value) => setTrusteeFeesForm(prev => ({ ...prev, property_id: parseInt(value) }))}>
+                      <Select value={trusteeFeesForm.property_id.toString()} onValueChange={(value) => setTrusteeFeesForm((prev) => ({ ...prev, property_id: parseInt(value) }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select property" />
                         </SelectTrigger>
                         <SelectContent>
-                          {properties.map((property) => (
-                            <SelectItem key={property.id} value={property.id.toString()}>
+                          {properties.map((property) =>
+                        <SelectItem key={property.id} value={property.id.toString()}>
                               {property.name}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -756,33 +756,33 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="periodicity">{t('periodicInvoices.periodicity')}</Label>
-                      <Select value={trusteeFeesForm.periodicity} onValueChange={(value) => setTrusteeFeesForm(prev => ({ ...prev, periodicity: value }))}>
+                      <Select value={trusteeFeesForm.periodicity} onValueChange={(value) => setTrusteeFeesForm((prev) => ({ ...prev, periodicity: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {periodicityOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                          {periodicityOptions.map((option) =>
+                        <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
-                          ))}
+                        )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="generationDay">{t('periodicInvoices.generationDay')}</Label>
                       <Input
-                        id="generationDay"
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={trusteeFeesForm.generation_day}
-                        onChange={(e) => setTrusteeFeesForm(prev => ({ ...prev, generation_day: parseInt(e.target.value) || 1 }))}
-                      />
+                      id="generationDay"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={trusteeFeesForm.generation_day}
+                      onChange={(e) => setTrusteeFeesForm((prev) => ({ ...prev, generation_day: parseInt(e.target.value) || 1 }))} />
+
                     </div>
                     <div>
                       <Label htmlFor="currency">{t('common.currency')}</Label>
-                      <Select value={trusteeFeesForm.currency} onValueChange={(value) => setTrusteeFeesForm(prev => ({ ...prev, currency: value }))}>
+                      <Select value={trusteeFeesForm.currency} onValueChange={(value) => setTrusteeFeesForm((prev) => ({ ...prev, currency: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -797,19 +797,19 @@ const PeriodicInvoicesManagement: React.FC = () => {
                   <div>
                     <Label htmlFor="templateDescription">{t('periodicInvoices.templateDescription')}</Label>
                     <Textarea
-                      id="templateDescription"
-                      value={trusteeFeesForm.template_description}
-                      onChange={(e) => setTrusteeFeesForm(prev => ({ ...prev, template_description: e.target.value }))}
-                      placeholder="Template description for generated invoices"
-                    />
+                    id="templateDescription"
+                    value={trusteeFeesForm.template_description}
+                    onChange={(e) => setTrusteeFeesForm((prev) => ({ ...prev, template_description: e.target.value }))}
+                    placeholder="Template description for generated invoices" />
+
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
-                      type="checkbox"
-                      id="isActive"
-                      checked={trusteeFeesForm.is_active}
-                      onChange={(e) => setTrusteeFeesForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                    />
+                    type="checkbox"
+                    id="isActive"
+                    checked={trusteeFeesForm.is_active}
+                    onChange={(e) => setTrusteeFeesForm((prev) => ({ ...prev, is_active: e.target.checked }))} />
+
                     <Label htmlFor="isActive">{t('periodicInvoices.isActive')}</Label>
                   </div>
                   <div className="flex justify-end space-x-2">
@@ -827,18 +827,18 @@ const PeriodicInvoicesManagement: React.FC = () => {
 
           <div className="grid gap-4">
             {trusteeFeesInvoices.map((invoice) => {
-              const owner = owners.find(o => o.id === invoice.owner_id);
-              const property = properties.find(p => p.id === invoice.property_id);
+            const owner = owners.find((o) => o.id === invoice.owner_id);
+            const property = properties.find((p) => p.id === invoice.property_id);
 
-              return (
-                <Card key={invoice.id}>
+            return (
+              <Card key={invoice.id}>
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-semibold">{owner?.owner_name}</h3>
                         <p className="text-sm text-gray-600 mt-1">{property?.name}</p>
                         <p className="text-sm text-gray-600">
-                          {t('periodicInvoices.periodicity')}: {periodicityOptions.find(p => p.value === invoice.periodicity)?.label}
+                          {t('periodicInvoices.periodicity')}: {periodicityOptions.find((p) => p.value === invoice.periodicity)?.label}
                         </p>
                         <p className="text-sm text-gray-600">
                           {t('periodicInvoices.nextGeneration')}: {new Date(invoice.next_generation_date).toLocaleDateString()}
@@ -854,30 +854,30 @@ const PeriodicInvoicesManagement: React.FC = () => {
                       </div>
                       <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editTrusteeFeesInvoice(invoice)}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editTrusteeFeesInvoice(invoice)}>
+
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteTrusteeFeesInvoice(invoice.id)}
-                        >
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteTrusteeFeesInvoice(invoice.id)}>
+
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>);
+
+          })}
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default PeriodicInvoicesManagement;

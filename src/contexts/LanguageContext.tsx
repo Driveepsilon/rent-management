@@ -19,7 +19,7 @@ export const useLanguage = () => {
   return context;
 };
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const LanguageProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const { i18n, t } = useTranslation();
 
   const language = i18n.language as Language;
@@ -39,6 +39,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
-    </LanguageContext.Provider>
-  );
+    </LanguageContext.Provider>);
+
 };

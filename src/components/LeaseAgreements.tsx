@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, FileText, Calendar, User, Home, Edit, Eye, IdCard, MapPin, Bed, Bath, Square } from 'lucide-react';
+import { Plus, FileText, Calendar, User, Home, Edit, Eye, IdCard, MapPin, Bed, Bath, Square, X } from 'lucide-react';
 
 interface LeaseAgreement {
   id: number;
@@ -52,6 +52,7 @@ const LeaseAgreements: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<LeaseAgreement | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,17 +205,7 @@ const LeaseAgreements: React.FC = () => {
       });
 
       setIsCreateDialogOpen(false);
-      setFormData({
-        tenant_id: '',
-        property_id: '',
-        lease_start_date: '',
-        lease_end_date: '',
-        base_rent: '',
-        security_deposit: '',
-        agency_fees: '',
-        payment_periodicity: 'monthly',
-        terms: ''
-      });
+      resetForm();
       fetchLeases();
       fetchProperties();
     } catch (error) {
@@ -222,6 +213,87 @@ const LeaseAgreements: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to create lease agreement',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleEditLease = async () => {
+    if (!selectedLease) return;
+
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('26866', {
+        ID: selectedLease.id,
+        tenant_id: parseInt(formData.tenant_id),
+        property_id: parseInt(formData.property_id),
+        lease_start_date: new Date(formData.lease_start_date).toISOString(),
+        lease_end_date: new Date(formData.lease_end_date).toISOString(),
+        base_rent: parseFloat(formData.base_rent),
+        security_deposit: parseFloat(formData.security_deposit),
+        agency_fees: parseFloat(formData.agency_fees),
+        payment_periodicity: formData.payment_periodicity,
+        status: selectedLease.status,
+        terms: formData.terms,
+        created_date: selectedLease.created_date
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Lease agreement updated successfully'
+      });
+
+      setIsEditDialogOpen(false);
+      setSelectedLease(null);
+      resetForm();
+      fetchLeases();
+    } catch (error) {
+      console.error('Error updating lease:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update lease agreement',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleCancelLease = async (lease: LeaseAgreement) => {
+    if (!confirm('Are you sure you want to cancel this lease agreement? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('26866', {
+        ID: lease.id,
+        ...lease,
+        status: 'cancelled'
+      });
+
+      if (error) throw error;
+
+      // Update property status to available
+      const property = properties.find((p) => p.id === lease.property_id);
+      if (property) {
+        await window.ezsite.apis.tableUpdate('26865', {
+          ID: property.id,
+          ...property,
+          status: 'available'
+        });
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Lease agreement cancelled successfully'
+      });
+
+      fetchLeases();
+      fetchProperties();
+    } catch (error) {
+      console.error('Error cancelling lease:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel lease agreement',
         variant: 'destructive'
       });
     }
@@ -266,6 +338,36 @@ const LeaseAgreements: React.FC = () => {
     }
   };
 
+  const openEditDialog = (lease: LeaseAgreement) => {
+    setSelectedLease(lease);
+    setFormData({
+      tenant_id: lease.tenant_id.toString(),
+      property_id: lease.property_id.toString(),
+      lease_start_date: new Date(lease.lease_start_date).toISOString().split('T')[0],
+      lease_end_date: new Date(lease.lease_end_date).toISOString().split('T')[0],
+      base_rent: lease.base_rent.toString(),
+      security_deposit: lease.security_deposit.toString(),
+      agency_fees: lease.agency_fees.toString(),
+      payment_periodicity: lease.payment_periodicity,
+      terms: lease.terms
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      tenant_id: '',
+      property_id: '',
+      lease_start_date: '',
+      lease_end_date: '',
+      base_rent: '',
+      security_deposit: '',
+      agency_fees: '',
+      payment_periodicity: 'monthly',
+      terms: ''
+    });
+  };
+
   const getTenant = (tenantId: number) => {
     return tenants.find((t) => t.id === tenantId);
   };
@@ -289,6 +391,7 @@ const LeaseAgreements: React.FC = () => {
       case 'active':return 'bg-green-100 text-green-800';
       case 'expired':return 'bg-yellow-100 text-yellow-800';
       case 'terminated':return 'bg-red-100 text-red-800';
+      case 'cancelled':return 'bg-gray-100 text-gray-800';
       default:return 'bg-gray-100 text-gray-800';
     }
   };
@@ -376,6 +479,14 @@ const LeaseAgreements: React.FC = () => {
 7. ALTERATIONS: No alterations to the premises without written consent from landlord.
 
 8. TERMINATION: Either party may terminate this lease with 30 days written notice.`;
+
+  const canEdit = (lease: LeaseAgreement) => {
+    return lease.status === 'active' || lease.status === 'expired';
+  };
+
+  const canCancel = (lease: LeaseAgreement) => {
+    return lease.status !== 'cancelled' && lease.status !== 'terminated';
+  };
 
   if (loading) {
     return <div className="p-6">Loading lease agreements...</div>;
@@ -582,6 +693,24 @@ const LeaseAgreements: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {canEdit(lease) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(lease)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                    {canCancel(lease) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelLease(lease)}>
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -614,6 +743,154 @@ const LeaseAgreements: React.FC = () => {
 
         })}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Lease Agreement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Tenant Information Section */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                Tenant Information
+              </h3>
+              <div>
+                <Label htmlFor="tenant">Select Tenant</Label>
+                <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tenant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) =>
+                    <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                        {tenant.tenant_name} - {tenant.id_number}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Property Information Section */}
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 flex items-center">
+                <Home className="h-5 w-5 mr-2" />
+                Property Information
+              </h3>
+              <div>
+                <Label htmlFor="property">Select Property</Label>
+                <Select value={formData.property_id} onValueChange={handlePropertySelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map((property) =>
+                    <SelectItem key={property.id} value={property.id.toString()}>
+                        {property.name} - {property.address}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Lease Agreement Information Section */}
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Lease Agreement Information
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="lease_start_date">Starting Date</Label>
+                    <Input
+                      id="lease_start_date"
+                      type="date"
+                      value={formData.lease_start_date}
+                      onChange={(e) => setFormData({ ...formData, lease_start_date: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="lease_end_date">Ending Date</Label>
+                    <Input
+                      id="lease_end_date"
+                      type="date"
+                      value={formData.lease_end_date}
+                      onChange={(e) => setFormData({ ...formData, lease_end_date: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="base_rent">Base Rent</Label>
+                    <Input
+                      id="base_rent"
+                      type="number"
+                      step="0.01"
+                      value={formData.base_rent}
+                      onChange={(e) => setFormData({ ...formData, base_rent: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="security_deposit">Security Deposit</Label>
+                    <Input
+                      id="security_deposit"
+                      type="number"
+                      step="0.01"
+                      value={formData.security_deposit}
+                      onChange={(e) => setFormData({ ...formData, security_deposit: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="agency_fees">Agency Fees</Label>
+                    <Input
+                      id="agency_fees"
+                      type="number"
+                      step="0.01"
+                      value={formData.agency_fees}
+                      onChange={(e) => setFormData({ ...formData, agency_fees: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="payment_periodicity">Payment Periodicity</Label>
+                    <Select value={formData.payment_periodicity} onValueChange={(value) => setFormData({ ...formData, payment_periodicity: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentPeriodicityOptions.map((option) =>
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="terms">Lease Terms and Conditions</Label>
+              <Textarea
+                id="terms"
+                value={formData.terms || defaultTerms}
+                onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+                placeholder="Enter lease terms and conditions"
+                className="min-h-[200px]" />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditLease}>
+                Update Lease Agreement
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {selectedLease &&
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>

@@ -19,10 +19,10 @@ export const useCurrency = () => {
   return context;
 };
 
-export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CurrencyProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const [currency, setCurrency] = useState<Currency>(() => {
     const savedCurrency = localStorage.getItem('currency');
-    return (savedCurrency as Currency) || 'USD';
+    return savedCurrency as Currency || 'USD';
   });
 
   useEffect(() => {
@@ -46,22 +46,22 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const formatCurrency = (amount: number, currencyCode?: Currency): string => {
     const code = currencyCode || currency;
     const symbol = getCurrencySymbol(code);
-    
+
     const formatter = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
-    
+
     if (code === 'XOF') {
       return `${formatter.format(amount)} ${symbol}`;
     }
-    
+
     return `${symbol}${formatter.format(amount)}`;
   };
 
   return (
     <CurrencyContext.Provider value={{ currency, setCurrency, formatCurrency, getCurrencySymbol }}>
       {children}
-    </CurrencyContext.Provider>
-  );
+    </CurrencyContext.Provider>);
+
 };

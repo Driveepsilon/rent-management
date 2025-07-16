@@ -230,25 +230,25 @@ export class PDFGenerator {
 
     // Invoice items table
     const tableData = [
-      ['Description', 'Quantity', 'Unit Price', 'Total']
-    ];
+    ['Description', 'Quantity', 'Unit Price', 'Total']];
+
 
     if (invoice.items && invoice.items.length > 0) {
-      invoice.items.forEach(item => {
+      invoice.items.forEach((item) => {
         tableData.push([
-          item.description,
-          item.quantity.toString(),
-          this.formatCurrency(item.unit_price, invoice.currency),
-          this.formatCurrency(item.total_amount, invoice.currency)
-        ]);
+        item.description,
+        item.quantity.toString(),
+        this.formatCurrency(item.unit_price, invoice.currency),
+        this.formatCurrency(item.total_amount, invoice.currency)]
+        );
       });
     } else {
       tableData.push([
-        invoice.description,
-        '1',
-        this.formatCurrency(invoice.total_amount, invoice.currency),
-        this.formatCurrency(invoice.total_amount, invoice.currency)
-      ]);
+      invoice.description,
+      '1',
+      this.formatCurrency(invoice.total_amount, invoice.currency),
+      this.formatCurrency(invoice.total_amount, invoice.currency)]
+      );
     }
 
     autoTable(doc, {

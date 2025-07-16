@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle, Mail } from 'lucide-react';
+import { Plus, Edit, Eye, FileText, Calendar, DollarSign, AlertCircle, Mail, X } from 'lucide-react';
 import { numberToWords } from '@/utils/numberToWords';
 import EmailDialog from '@/components/EmailDialog';
 
@@ -47,12 +47,14 @@ const InvoiceManagement: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailSentStatuses, setEmailSentStatuses] = useState<{ [key: number]: boolean }>({});
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -73,6 +75,37 @@ const InvoiceManagement: React.FC = () => {
     fetchTenants();
     fetchProperties();
   }, []);
+
+  useEffect(() => {
+    if (invoices.length > 0) {
+      checkEmailStatuses();
+    }
+  }, [invoices]);
+
+  const checkEmailStatuses = async () => {
+    try {
+      const statuses: { [key: number]: boolean } = {};
+      for (const invoice of invoices) {
+        const { data, error } = await window.ezsite.apis.tablePage('27120', {
+          PageNo: 1,
+          PageSize: 1,
+          OrderByField: 'id',
+          IsAsc: false,
+          Filters: [
+            { name: 'invoice_id', op: 'Equal', value: invoice.id },
+            { name: 'email_type', op: 'Equal', value: 'invoice' },
+            { name: 'status', op: 'Equal', value: 'sent' }
+          ]
+        });
+        if (!error && data.List && data.List.length > 0) {
+          statuses[invoice.id] = true;
+        }
+      }
+      setEmailSentStatuses(statuses);
+    } catch (error) {
+      console.error('Error checking email statuses:', error);
+    }
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -189,24 +222,88 @@ const InvoiceManagement: React.FC = () => {
       });
 
       setIsCreateDialogOpen(false);
-      setFormData({
-        tenant_id: '',
-        property_id: '',
-        invoice_date: new Date().toISOString().split('T')[0],
-        due_date: '',
-        amount: '',
-        description: '',
-        late_fee: '0',
-        rent_period: '',
-        rent_months: '1',
-        bank_information: ''
-      });
+      resetForm();
       fetchInvoices();
     } catch (error) {
       console.error('Error creating invoice:', error);
       toast({
         title: 'Error',
         description: 'Failed to create invoice',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleEditInvoice = async () => {
+    if (!selectedInvoice) return;
+
+    try {
+      const amount = parseFloat(formData.amount);
+      const amountInLetters = numberToWords(amount);
+
+      const { error } = await window.ezsite.apis.tableUpdate('26867', {
+        ID: selectedInvoice.id,
+        tenant_id: parseInt(formData.tenant_id),
+        property_id: parseInt(formData.property_id),
+        invoice_number: selectedInvoice.invoice_number,
+        invoice_date: new Date(formData.invoice_date).toISOString(),
+        due_date: new Date(formData.due_date).toISOString(),
+        amount: amount,
+        description: formData.description,
+        late_fee: parseFloat(formData.late_fee),
+        rent_period: formData.rent_period,
+        rent_months: parseInt(formData.rent_months),
+        bank_information: formData.bank_information,
+        amount_in_letters: amountInLetters,
+        status: selectedInvoice.status
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Invoice updated successfully'
+      });
+
+      setIsEditDialogOpen(false);
+      setSelectedInvoice(null);
+      resetForm();
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update invoice',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleCancelInvoice = async (invoice: Invoice) => {
+    if (!confirm('Are you sure you want to cancel this invoice? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await window.ezsite.apis.tableUpdate('26867', {
+        ID: invoice.id,
+        ...invoice,
+        status: 'cancelled'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Invoice cancelled successfully'
+      });
+
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error cancelling invoice:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel invoice',
         variant: 'destructive'
       });
     }
@@ -236,6 +333,38 @@ const InvoiceManagement: React.FC = () => {
         variant: 'destructive'
       });
     }
+  };
+
+  const openEditDialog = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setFormData({
+      tenant_id: invoice.tenant_id.toString(),
+      property_id: invoice.property_id.toString(),
+      invoice_date: new Date(invoice.invoice_date).toISOString().split('T')[0],
+      due_date: new Date(invoice.due_date).toISOString().split('T')[0],
+      amount: invoice.amount.toString(),
+      description: invoice.description,
+      late_fee: invoice.late_fee.toString(),
+      rent_period: invoice.rent_period,
+      rent_months: invoice.rent_months.toString(),
+      bank_information: invoice.bank_information
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      tenant_id: '',
+      property_id: '',
+      invoice_date: new Date().toISOString().split('T')[0],
+      due_date: '',
+      amount: '',
+      description: '',
+      late_fee: '0',
+      rent_period: '',
+      rent_months: '1',
+      bank_information: ''
+    });
   };
 
   const handleSendEmail = (invoice: Invoice) => {
@@ -281,6 +410,7 @@ const InvoiceManagement: React.FC = () => {
       case 'paid':return 'bg-green-100 text-green-800';
       case 'pending':return 'bg-yellow-100 text-yellow-800';
       case 'overdue':return 'bg-red-100 text-red-800';
+      case 'cancelled':return 'bg-gray-100 text-gray-800';
       default:return 'bg-gray-100 text-gray-800';
     }
   };
@@ -336,6 +466,14 @@ const InvoiceManagement: React.FC = () => {
   const getCurrentAmountInWords = () => {
     const amount = parseFloat(formData.amount);
     return isNaN(amount) ? '' : numberToWords(amount);
+  };
+
+  const canEdit = (invoice: Invoice) => {
+    return invoice.status !== 'cancelled' && !emailSentStatuses[invoice.id];
+  };
+
+  const canCancel = (invoice: Invoice) => {
+    return invoice.status !== 'cancelled' && invoice.status !== 'paid';
   };
 
   if (loading) {
@@ -492,6 +630,11 @@ const InvoiceManagement: React.FC = () => {
                     <Badge className={getStatusColor(invoice.status)}>
                       {invoice.status}
                     </Badge>
+                    {emailSentStatuses[invoice.id] && (
+                      <Badge className="bg-blue-100 text-blue-800">
+                        Email Sent
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Tenant:</strong> {getTenantName(invoice.tenant_id)}</p>
@@ -504,6 +647,24 @@ const InvoiceManagement: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  {canEdit(invoice) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog(invoice)}>
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                  {canCancel(invoice) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCancelInvoice(invoice)}>
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                  )}
                   <Button
                   variant="outline"
                   size="sm"
@@ -543,6 +704,136 @@ const InvoiceManagement: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="tenant">Tenant</Label>
+                <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tenant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) =>
+                    <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                        {tenant.tenant_name}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="property">Property</Label>
+                <Select value={formData.property_id} onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map((property) =>
+                    <SelectItem key={property.id} value={property.id.toString()}>
+                        {property.name}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="invoice_date">Invoice Date</Label>
+                <Input
+                  id="invoice_date"
+                  type="date"
+                  value={formData.invoice_date}
+                  onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="due_date">Due Date</Label>
+                <Input
+                  id="due_date"
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="rent_period">Rent Period</Label>
+                <Input
+                  id="rent_period"
+                  value={formData.rent_period}
+                  onChange={(e) => setFormData({ ...formData, rent_period: e.target.value })}
+                  placeholder="e.g., January 2024" />
+              </div>
+              <div>
+                <Label htmlFor="rent_months">Number of Rent Months</Label>
+                <Input
+                  id="rent_months"
+                  type="number"
+                  min="1"
+                  value={formData.rent_months}
+                  onChange={(e) => setFormData({ ...formData, rent_months: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={(e) => handleAmountChange(e.target.value)} />
+                {formData.amount &&
+                <p className="text-xs text-gray-500 mt-1">
+                    In words: {getCurrentAmountInWords()}
+                  </p>
+                }
+              </div>
+              <div>
+                <Label htmlFor="late_fee">Late Fee</Label>
+                <Input
+                  id="late_fee"
+                  type="number"
+                  step="0.01"
+                  value={formData.late_fee}
+                  onChange={(e) => setFormData({ ...formData, late_fee: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="bank_information">Bank Information</Label>
+              <Textarea
+                id="bank_information"
+                value={formData.bank_information}
+                onChange={(e) => setFormData({ ...formData, bank_information: e.target.value })}
+                placeholder="Bank name, account number, routing number, etc."
+                rows={3} />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter invoice description" />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditInvoice}>
+                Update Invoice
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {selectedInvoice &&
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>

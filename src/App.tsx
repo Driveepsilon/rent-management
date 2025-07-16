@@ -61,8 +61,8 @@ function App() {
           </CurrencyProvider>
         </LanguageProvider>
       </TooltipProvider>
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>);
+
 }
 
 export default App;
